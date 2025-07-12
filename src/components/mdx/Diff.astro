@@ -1,0 +1,159 @@
+---
+interface Props {
+	r: string | ImageMetadata; // right image
+	l: string | ImageMetadata; // left image
+	rightAlt?: string;
+	leftAlt?: string;
+}
+
+const { r, l, rightAlt = "Right image", leftAlt = "Left image" } = Astro.props;
+
+// Handle both string URLs and imported image objects
+const rightSrc = typeof r === "string" ? r : r.src;
+const leftSrc = typeof l === "string" ? l : l.src;
+---
+
+<div class="not-prose diff aspect-[16/9] rounded-lg overflow-hidden">
+  <div class="diff-item-1">
+    <img alt={leftAlt} src={leftSrc} loading="lazy" class="w-full h-full object-cover" />
+  </div>
+  <div class="diff-item-2">
+    <img alt={rightAlt} src={rightSrc} loading="lazy" class="w-full h-full object-cover" />
+  </div>
+  <div class="diff-resizer">
+    <div class="diff-resizer-line"></div>
+    <div class="diff-resizer-circle"></div>
+</div>
+</div>
+<style>
+  .diff {
+    position: relative;
+    width: 100%;
+    display: grid;
+    user-select: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+  }
+
+  .diff-item-1,
+  .diff-item-2 {
+    grid-area: 1/1;
+    overflow: hidden;
+    max-width: 100%;
+    user-select: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+  }
+
+  .diff-item-1 img,
+  .diff-item-2 img {
+    pointer-events: none;
+    user-select: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    -webkit-user-drag: none;
+  }
+
+  .diff-item-2 {
+    clip-path: polygon(50% 0, 100% 0, 100% 100%, 50% 100%);
+  }
+
+  .diff-resizer {
+    position: absolute;
+    height: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    cursor: ew-resize;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .diff-resizer-line {
+    position: absolute;
+    width: 3px;
+    height: 100%;
+    background-color: var(--primary, #3b82f6);
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 1;
+    }
+
+  .diff-resizer-circle {
+    position: relative;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    border: 2px solid white;
+    background-color: var(--primary, #3b82f6);
+    box-shadow: 0 0 0 1px var(--primary, #3b82f6);
+    z-index: 2;
+    transition: transform 0.2s ease;
+  }
+
+  .diff:hover .diff-resizer-circle {
+    transform: scale(1.1);
+  }
+
+  .diff.resizing {
+    cursor: ew-resize;
+  }
+
+  .diff.resizing .diff-resizer-circle {
+    transform: scale(1.2);
+  }
+</style>
+
+<script>
+  document.addEventListener('DOMContentLoaded', () => {
+    const diffs = document.querySelectorAll('.diff');
+
+    diffs.forEach(diff => {
+      const resizer = diff.querySelector('.diff-resizer') as HTMLElement;
+      const item2 = diff.querySelector('.diff-item-2') as HTMLElement;
+      let isResizing = false;
+
+      const startResizing = (e: MouseEvent | TouchEvent) => {
+        e.preventDefault();
+        isResizing = true;
+        diff.classList.add('resizing');
+      };
+
+      const stopResizing = () => {
+        isResizing = false;
+        diff.classList.remove('resizing');
+      };
+
+      const resize = (e: MouseEvent | TouchEvent) => {
+        if (!isResizing) return;
+        e.preventDefault();
+
+        let clientX;
+        if (e instanceof MouseEvent) {
+          clientX = e.clientX;
+        } else {
+          clientX = e.touches[0].clientX;
+        }
+
+        const diffRect = diff.getBoundingClientRect();
+        const percentage = ((clientX - diffRect.left) / diffRect.width) * 100;
+        const bounded = Math.max(0, Math.min(100, percentage));
+
+        item2.style.clipPath = `polygon(${bounded}% 0, 100% 0, 100% 100%, ${bounded}% 100%)`;
+        resizer.style.left = `${bounded}%`;
+      };
+
+      resizer.addEventListener('mousedown', startResizing);
+      document.addEventListener('mousemove', resize);
+      document.addEventListener('mouseup', stopResizing);
+
+      resizer.addEventListener('touchstart', startResizing);
+      document.addEventListener('touchmove', resize);
+      document.addEventListener('touchend', stopResizing);
+    });
+  });
+</script>
+

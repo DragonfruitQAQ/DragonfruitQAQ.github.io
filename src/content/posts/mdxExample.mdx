@@ -1,0 +1,55 @@
+---
+title: MDX 特性演示
+published: 2024-01-11T00:00:00.000Z
+updated: 2024-01-11T00:00:00.000Z
+description: 展示 MDX 相比普通 Markdown 的独特功能和优势
+tags:
+  - MDX
+  - Astro
+  - 教程
+category: 教程
+draft: false
+---
+import Collapse from "../../components/mdx/Collapse.astro";
+import Diff from "../../components/mdx/Diff.astro";
+import OverField1 from "../../assets/mdxImages/OverField1.png";
+import OverField2 from "../../assets/mdxImages/OverField2.png";
+
+# MDX 特性演示
+
+## 1. 图片对比组件
+
+<Diff
+  l={OverField1}
+  r={OverField2}
+  leftAlt="左侧图片"
+  rightAlt="右侧图片"
+/>
+
+## 2. 组件特点
+
+<Collapse title="查看组件特点">
+1. **交互特性**：
+   - 可拖动的分隔线
+   - 平滑的过渡效果
+   - 触摸屏支持
+
+2. **样式特点**：
+   - 响应式设计
+   - 圆角边框
+   - 优雅的视觉效果
+
+3. **使用方法**：
+```astro
+<Diff
+  l="/assets/images/OverField1.png"
+  r="/assets/images/OverField2.png"
+  leftAlt="左侧图片描述"
+  rightAlt="右侧图片描述"
+/>
+```
+
+</Collapse>
+
+## 3. 进阶用法
+

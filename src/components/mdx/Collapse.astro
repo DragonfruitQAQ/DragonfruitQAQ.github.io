@@ -1,0 +1,41 @@
+---
+import { Icon } from "astro-icon/components";
+
+interface Props {
+	title: string;
+}
+
+const { title } = Astro.props;
+---
+
+<details class="my-4 rounded-xl border border-base-content/20 overflow-hidden bg-[var(--bg-overlay)] transition-colors">
+  <summary class="p-4 text-lg font-medium cursor-pointer hover:bg-[var(--bg-overlay-hover)] flex items-center justify-between">
+    {title}
+    <Icon name="lucide:chevron-down" class="w-5 h-5 transition-transform" />
+  </summary>
+  <div class="px-4 pb-4">
+    <slot />
+  </div>
+</details>
+
+<style>
+  details {
+    background-color: var(--bg-overlay, rgba(0, 0, 0, 0.03));
+  }
+
+  details:hover {
+    background-color: var(--bg-overlay-hover, rgba(0, 0, 0, 0.05));
+  }
+
+  details[open] summary svg {
+    transform: rotate(180deg);
+  }
+
+  summary {
+    list-style: none;
+  }
+
+  summary::-webkit-details-marker {
+    display: none;
+  }
+</style>
