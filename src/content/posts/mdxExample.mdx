@@ -12,16 +12,14 @@ draft: false
 ---
 import Collapse from "../../components/mdx/Collapse.astro";
 import Diff from "../../components/mdx/Diff.astro";
-import OverField1 from "../../assets/mdxImages/OverField1.png";
-import OverField2 from "../../assets/mdxImages/OverField2.png";
 
 # MDX 特性演示
 
 ## 1. 图片对比组件
 
 <Diff
-  l={OverField1}
-  r={OverField2}
+  l="/images/OverField1.png"
+  r="/images/OverField2.png"
   leftAlt="左侧图片"
   rightAlt="右侧图片"
 />
@@ -42,8 +40,8 @@ import OverField2 from "../../assets/mdxImages/OverField2.png";
 3. **使用方法**：
 ```astro
 <Diff
-  l="/assets/images/OverField1.png"
-  r="/assets/images/OverField2.png"
+  l="/images/OverField1.png"
+  r="/images/OverField2.png"
   leftAlt="左侧图片描述"
   rightAlt="右侧图片描述"
 />

@@ -108,12 +108,19 @@ const leftSrc = typeof l === "string" ? l : l.src;
 </style>
 
 <script>
-  document.addEventListener('DOMContentLoaded', () => {
+  function initializeDiff() {
     const diffs = document.querySelectorAll('.diff');
 
     diffs.forEach(diff => {
+      // Skip if already initialized
+      if (diff.hasAttribute('data-diff-initialized')) return;
+      diff.setAttribute('data-diff-initialized', 'true');
+
       const resizer = diff.querySelector('.diff-resizer') as HTMLElement;
       const item2 = diff.querySelector('.diff-item-2') as HTMLElement;
+
+      if (!resizer || !item2) return;
+
       let isResizing = false;
 
       const startResizing = (e: MouseEvent | TouchEvent) => {
@@ -154,6 +161,16 @@ const leftSrc = typeof l === "string" ? l : l.src;
       document.addEventListener('touchmove', resize);
       document.addEventListener('touchend', stopResizing);
     });
-  });
+  }
+
+  // Initialize on DOM ready
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initializeDiff);
+  } else {
+    initializeDiff();
+  }
+
+  // Re-initialize after page transitions (for SPA-like behavior)
+  document.addEventListener('astro:page-load', initializeDiff);
 </script>
 
