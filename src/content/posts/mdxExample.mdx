@@ -7,7 +7,7 @@ tags:
   - MDX
   - Astro
   - 教程
-category: 教程
+category: Blog Example
 draft: false
 ---
 import Collapse from "../../components/mdx/Collapse.astro";
@@ -25,7 +25,7 @@ import Tabs from "../../components/mdx/Tabs.astro";
   rightAlt="右侧图片"
 />
 
-## 2. 组件特点
+## 2. 查看组件
 
 <Collapse title="查看组件特点">
 1. **交互特性**：
@@ -123,14 +123,38 @@ import Tabs from "../../components/mdx/Tabs.astro";
   <p>查看 <a href="https://docs.astro.build/en/guides/markdown-content/" target="_blank">Astro官方文档</a>，了解更多关于MDX的高级用法和最佳实践。</p>
 </Collapse>
 
-## 总结
+## 其余栗子🌰
 
-通过这些简洁而实用的MDX组件，我们可以：
+除了mdx组件，原博主教学的markdown写法还有很多，以下是一些栗子！
 
-- ✅ **图片对比**：创建交互式的图片对比效果，支持拖拽操作
-- ✅ **选项卡**：实现内容分组和切换功能，统一的主题样式
-- ✅ **折叠面板**：创建可展开的内容区域，节省页面空间
-- ✅ **组件组合**：自由组合各种组件创造丰富的内容体验
+另外，这个是原博主：
+::github{repo="saicaca/fuwari"}
 
-这些组件采用了统一的设计语言，去除了多余的边框，支持明暗主题切换，为你的博客提供简洁而优雅的交互体验！
 
+## 插入Bilibili视频
+
+<iframe width="100%" height="468" src="//player.bilibili.com/player.html?bvid=BV1fK4y1s7Qf&p=1" scrolling="no" border="0" frameborder="no" framespacing="0" allowfullscreen="true"> </iframe>
+
+## Front-matter of Posts
+
+```
+---
+title: My First Blog Post
+published: 2023-09-09
+description: This is the first post of my new Astro blog.
+image: ./cover.jpg
+tags: [Foo, Bar]
+category: Front-end
+draft: false
+---
+```
+
+| Attribute     | Description                                                                                                                                                                                                 |
+|---------------|-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `title`       | The title of the post.                                                                                                                                                                                      |
+| `published`   | The date the post was published.                                                                                                                                                                            |
+| `description` | A short description of the post. Displayed on index page.                                                                                                                                                   |
+| `image`       | The cover image path of the post.<br/>1. Start with `http://` or `https://`: Use web image<br/>2. Start with `/`: For image in `public` dir<br/>3. With none of the prefixes: Relative to the markdown file |
+| `tags`        | The tags of the post.                                                                                                                                                                                       |
+| `category`    | The category of the post.                                                                                                                                                                                   |
+| `draft`        | If this post is still a draft, which won't be displayed.                                                                                                                                                    |

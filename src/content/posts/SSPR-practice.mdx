@@ -1,0 +1,36 @@
+---
+title: SSPR（屏幕空间平面反射）实践
+published: 2025-08-14T00:00:00.000Z
+updated: 2025-08-20T00:00:00.000Z
+description: 在实际项目中应用SSPR，以及一些trick优化
+image: "/images/cover.jpeg"
+tags:
+  - Unity
+  - SSPR
+  - 屏幕空间
+category: 实践记录
+draft: false
+---
+import Collapse from "../../components/mdx/Collapse.astro";
+import Diff from "../../components/mdx/Diff.astro";
+import Tabs from "../../components/mdx/Tabs.astro";
+import PasswordProtect from "../../components/mdx/PasswordProtect.astro";
+
+
+<PasswordProtect password="我不会转载图片" hint="提示：请输入相应文字" title="图片属于公司内部" excerpt="请输入“我不会转载图片”">
+# MDX 特性演示
+## 1. 图片对比组件
+
+<Diff
+  l="/images/OverField1.png"
+  r="/images/OverField2.png"
+  leftAlt="左侧图片"
+  rightAlt="右侧图片"
+/>
+
+我将写完SSPR中的很多细节。
+1. 主要做了什么事情？生成反射贴图，PBR中简单构建模糊贴图来替代预滤波环境贴图。
+2. SSPR的原理以及优劣
+3. 反射相机和SSPR结合
+4. 其他的小细节，错帧处理
+</PasswordProtect>

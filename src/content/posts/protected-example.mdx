@@ -1,0 +1,49 @@
+---
+title: 密码保护的文章示例
+published: 2025-08-15T00:00:00.000Z
+description: 这是一篇受密码保护的文章示例
+tags:
+  - MDX
+  - 假装保护
+category: Blog Example
+draft: false
+---
+
+import PasswordProtect from "../../components/mdx/PasswordProtect.astro";
+
+<PasswordProtect password="我不会转载图片" hint="提示：请输入相应文字" title="图片属于公司内部" excerpt="请输入“我不会转载图片”">
+
+# 受保护的文章内容
+
+这是文章的完整内容，只有在输入正确密码后才能看到。
+
+## 章节一
+
+Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nullam auctor, nisl eget ultricies tincidunt, nisl nisl aliquam nisl, eget ultricies nisl nisl eget nisl. Nullam auctor, nisl eget ultricies tincidunt, nisl nisl aliquam nisl, eget ultricies nisl nisl eget nisl.
+
+## 章节二
+
+这是一个受保护的文章示例，展示了如何使用 PasswordProtect 组件来保护您的内容。您可以将任何内容放入这个组件中，只有在输入正确密码后才能显示。
+
+### 子章节
+
+您还可以在受保护的内容中使用所有常规的 Markdown 功能：
+
+- 列表项 1
+- 列表项 2
+- 列表项 3
+
+> 这是一个引用块，在解锁后可以看到。
+
+### 代码示例
+
+```javascript
+function helloWorld() {
+  console.log("Hello, world!");
+}
+```
+
+## 结论
+
+通过这种方式，您可以轻松地为您的博客文章添加密码保护功能。只需要将您的内容包装在 `PasswordProtect` 组件中，并设置密码即可。
+</PasswordProtect>
