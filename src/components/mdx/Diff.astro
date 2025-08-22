@@ -13,7 +13,7 @@ const rightSrc = typeof r === "string" ? r : r.src;
 const leftSrc = typeof l === "string" ? l : l.src;
 ---
 
-<div class="not-prose diff aspect-[16/9] rounded-lg overflow-hidden">
+<div class="not-prose diff aspect-[16/9] rounded-lg overflow-hidden" data-fullscreen-container>
   <div class="diff-item-1">
     <img alt={leftAlt} src={leftSrc} loading="lazy" class="w-full h-full object-cover" />
   </div>
@@ -23,7 +23,19 @@ const leftSrc = typeof l === "string" ? l : l.src;
   <div class="diff-resizer">
     <div class="diff-resizer-line"></div>
     <div class="diff-resizer-circle"></div>
-</div>
+  </div>
+  <button 
+    class="diff-fullscreen-btn" 
+    aria-label="Toggle fullscreen"
+    data-fullscreen-btn
+  >
+    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M8 3H5a2 2 0 0 0-2 2v3"></path>
+      <path d="M21 8V5a2 2 0 0 0-2-2h-3"></path>
+      <path d="M3 16v3a2 2 0 0 0 2 2h3"></path>
+      <path d="M16 21h3a2 2 0 0 0 2-2v-3"></path>
+    </svg>
+  </button>
 </div>
 <style>
   .diff {
@@ -105,6 +117,100 @@ const leftSrc = typeof l === "string" ? l : l.src;
   .diff.resizing .diff-resizer-circle {
     transform: scale(1.2);
   }
+
+  .diff-fullscreen-btn {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    width: 40px;
+    height: 40px;
+    border-radius: 6px;
+    background-color: rgba(0, 0, 0, 0.7);
+    color: white;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity 0.2s ease, background-color 0.2s ease;
+    z-index: 10;
+  }
+
+  .diff:hover .diff-fullscreen-btn {
+    opacity: 1;
+  }
+
+  .diff-fullscreen-btn:hover {
+    background-color: rgba(0, 0, 0, 0.9);
+  }
+
+  .diff.fullscreen {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    max-width: 100%;
+    max-height: 100%;
+    z-index: 9999;
+    border-radius: 0;
+    margin: 0;
+  }
+
+  .diff.fullscreen .diff-fullscreen-btn {
+    opacity: 1;
+  }
+
+  .diff.fullscreen .diff-fullscreen-btn svg {
+    transform: rotate(0.5turn);
+  }
+  
+  /* 全屏时的样式 */
+  .diff:-webkit-full-screen {
+    width: 100vw;
+    height: 100vh;
+    border-radius: 0;
+    background-color: black; /* 添加背景色以确保在全屏时有合适的背景 */
+  }
+  
+  .diff:-moz-full-screen {
+    width: 100vw;
+    height: 100vh;
+    border-radius: 0;
+    background-color: black;
+  }
+  
+  .diff:-ms-fullscreen {
+    width: 100vw;
+    height: 100vh;
+    border-radius: 0;
+    background-color: black;
+  }
+  
+  .diff:fullscreen {
+    width: 100vw;
+    height: 100vh;
+    border-radius: 0;
+    background-color: black;
+  }
+  
+  /* 全屏时确保按钮可见 */
+  .diff:-webkit-full-screen .diff-fullscreen-btn {
+    opacity: 1;
+  }
+  
+  .diff:-moz-full-screen .diff-fullscreen-btn {
+    opacity: 1;
+  }
+  
+  .diff:-ms-fullscreen .diff-fullscreen-btn {
+    opacity: 1;
+  }
+  
+  .diff:fullscreen .diff-fullscreen-btn {
+    opacity: 1;
+  }
 </style>
 
 <script>
@@ -118,6 +224,7 @@ const leftSrc = typeof l === "string" ? l : l.src;
 
       const resizer = diff.querySelector('.diff-resizer') as HTMLElement;
       const item2 = diff.querySelector('.diff-item-2') as HTMLElement;
+      const fullscreenBtn = diff.querySelector('[data-fullscreen-btn]') as HTMLButtonElement;
 
       if (!resizer || !item2) return;
 
@@ -141,8 +248,10 @@ const leftSrc = typeof l === "string" ? l : l.src;
         let clientX;
         if (e instanceof MouseEvent) {
           clientX = e.clientX;
-        } else {
+        } else if (e.touches && e.touches[0]) {
           clientX = e.touches[0].clientX;
+        } else {
+          return;
         }
 
         const diffRect = diff.getBoundingClientRect();
@@ -153,6 +262,52 @@ const leftSrc = typeof l === "string" ? l : l.src;
         resizer.style.left = `${bounded}%`;
       };
 
+      // Fullscreen functionality using the Fullscreen API
+      const toggleFullscreen = async () => {
+        try {
+          if (!(document as any).fullscreenElement) {
+            // Enter fullscreen
+            if (diff.requestFullscreen) {
+              await diff.requestFullscreen();
+            } else if ((diff as any).webkitRequestFullscreen) {
+              await (diff as any).webkitRequestFullscreen();
+            } else if ((diff as any).mozRequestFullScreen) {
+              await (diff as any).mozRequestFullScreen();
+            } else if ((diff as any).msRequestFullscreen) {
+              await (diff as any).msRequestFullscreen();
+            }
+            diff.classList.add('fullscreen');
+          } else {
+            // Exit fullscreen
+            if (document.exitFullscreen) {
+              await document.exitFullscreen();
+            } else if ((document as any).webkitExitFullscreen) {
+              await (document as any).webkitExitFullscreen();
+            } else if ((document as any).mozCancelFullScreen) {
+              await (document as any).mozCancelFullScreen();
+            } else if ((document as any).msExitFullscreen) {
+              await (document as any).msExitFullscreen();
+            }
+            diff.classList.remove('fullscreen');
+          }
+        } catch (error) {
+          console.error('Error attempting to toggle fullscreen:', error);
+        }
+      };
+
+      // Listen for fullscreen change events to handle ESC key
+      const handleFullscreenChange = () => {
+        if (!(document as any).fullscreenElement) {
+          diff.classList.remove('fullscreen');
+        }
+      };
+
+      document.addEventListener('fullscreenchange', handleFullscreenChange);
+      document.addEventListener('webkitfullscreenchange', handleFullscreenChange);
+      document.addEventListener('mozfullscreenchange', handleFullscreenChange);
+      document.addEventListener('MSFullscreenChange', handleFullscreenChange);
+
+      // Event listeners for resizing
       resizer.addEventListener('mousedown', startResizing);
       document.addEventListener('mousemove', resize);
       document.addEventListener('mouseup', stopResizing);
@@ -160,6 +315,11 @@ const leftSrc = typeof l === "string" ? l : l.src;
       resizer.addEventListener('touchstart', startResizing);
       document.addEventListener('touchmove', resize);
       document.addEventListener('touchend', stopResizing);
+
+      // Event listener for fullscreen
+      if (fullscreenBtn) {
+        fullscreenBtn.addEventListener('click', toggleFullscreen);
+      }
     });
   }
 
@@ -173,4 +333,3 @@ const leftSrc = typeof l === "string" ? l : l.src;
   // Re-initialize after page transitions (for SPA-like behavior)
   document.addEventListener('astro:page-load', initializeDiff);
 </script>
-
