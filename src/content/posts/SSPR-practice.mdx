@@ -17,7 +17,7 @@ import Tabs from "../../components/mdx/Tabs.astro";
 
 
 
-# SSPR
+# Screen Space Planar Reflection (SSPR)
 ## 1. 最终效果
 
 <Diff
@@ -32,3 +32,27 @@ import Tabs from "../../components/mdx/Tabs.astro";
 2. SSPR的原理以及优劣
 3. 反射相机和SSPR结合
 4. 其他的小细节，错帧处理
+
+主要做了什么事情？
+1. 根据原始`屏幕纹理`以及`深度贴图`，对每个屏幕纹理的像素查询其世界空间位置，然后直接将其世界空间位置按照水平面取反。
+2. 取反后的世界空间位置再转换到屏幕空间纹理上，将原始像素填充到映射后的屏幕空间位置，这样就得到`反射贴图`。
+3. 最后用这个反射贴图近似预滤波环境贴图来渲染球场内的地板（不够物理）。
+
+
+
+
+
+## 2. 原理部分
+关于SSPR的原理其实相对简单和有趣。这里首先贴出一些链接。
+1. 首先贴出应该是原始的技术分享链接：
+https://remi-genin.github.io/posts/screen-space-planar-reflections-in-ghost-recon-wildlands/
+2. 然后是知乎大佬的实践和理解：
+https://zhuanlan.zhihu.com/p/651134124
+3. 然后说下我在实践中的一些理解，尽可能用简单的话语来解释：
+
+## 3.反射相机和SSPR结合
+
+
+
+
+## 4.结语
