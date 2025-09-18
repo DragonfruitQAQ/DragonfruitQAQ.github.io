@@ -1,0 +1,29 @@
+---
+title: 或许值得记录的经验
+published: 2025-09-18T00:00:00.000Z
+updated: 2025-09-18T00:00:00.000Z
+description: 工作过程中遇到的一些问题以及如何解决的
+image: "/images/cover.jpeg"
+tags:
+  - Unity
+  - RenderDoc
+  - 其他
+category: 实践记录
+draft: false
+---
+import Collapse from "../../components/mdx/Collapse.astro";
+import Diff from "../../components/mdx/Diff.astro";
+import Tabs from "../../components/mdx/Tabs.astro";
+
+## 1. Unity
+
+1. RenderMeshInstanced 和 DrawMeshInstancedIndirect
+2. 在从Texture2D拷贝图像到Texture2DArray特定层的时候会遇到：graphics.copytexture source and destination have different master texture limits. source 1, destination 0
+原因：使用了Mipmap的Texture2D主纹理可能有所限制，而Array没有这一设定。使用sourceTex.ignoreMipmapLimit = true;即可解决
+## 2. RenderDoc
+
+
+## 3.ComputeShader
+
+
+## 4.结语
