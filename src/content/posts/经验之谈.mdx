@@ -20,6 +20,7 @@ import Tabs from "../../components/mdx/Tabs.astro";
 1. RenderMeshInstanced 和 DrawMeshInstancedIndirect
 2. 在从Texture2D拷贝图像到Texture2DArray特定层的时候会遇到：graphics.copytexture source and destination have different master texture limits. source 1, destination 0
 原因：使用了Mipmap的Texture2D主纹理可能有所限制，而Array没有这一设定。使用sourceTex.ignoreMipmapLimit = true;即可解决
+3. 调试程序错误时遇到打了断点但是程序运行不到断点的情况：一般是用了某个未被赋值的变量，仔细查看报错信息(喂给AI)
 ## 2. RenderDoc
 
 1. RenderDoc可以调试compute shader，打开pipeline 窗口，选择特定的线程即可。
