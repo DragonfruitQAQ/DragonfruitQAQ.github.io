@@ -13,6 +13,7 @@ draft: false
 import Collapse from "../../components/mdx/Collapse.astro";
 import Diff from "../../components/mdx/Diff.astro";
 import Tabs from "../../components/mdx/Tabs.astro";
+import QAItem from "../../components/QAItem.astro";
 
 # MDX 特性演示
 
@@ -111,7 +112,14 @@ import Tabs from "../../components/mdx/Tabs.astro";
   </div>
 </Tabs>
 
-## 4. 进阶用法
+## 4. 问答组件
+
+<QAItem
+  question="什么是 MDX？"
+  answer="MDX 是一种文件格式，可让您在 Markdown 文档中无缝编写 JSX。您可以使用组件（如交互式图表或警报）导入和使用组件，所有这些都与常规 Markdown 内容一起使用。"
+/>
+
+## 5. 进阶用法
 
 你可以组合使用这些组件来创建更复杂的内容：
 
@@ -130,7 +138,7 @@ import Tabs from "../../components/mdx/Tabs.astro";
   <p>查看 <a href="https://docs.astro.build/en/guides/markdown-content/" target="_blank">Astro官方文档</a>，了解更多关于MDX的高级用法和最佳实践。</p>
 </Collapse>
 
-## 其余栗子🌰
+## 6. 其余栗子🌰
 
 除了mdx组件，原博主教学的markdown写法还有很多，以下是一些栗子！
 
