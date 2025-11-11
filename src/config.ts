@@ -53,16 +53,16 @@ export const navBarConfig: NavBarConfig = {
 };
 
 export const profileConfig: ProfileConfig = {
-	avatar: "assets/images/demo-avatar.png", // Relative to the /src directory. Relative to the /public directory if it starts with '/'
+	avatar: "assets/images/阿明_艾伦_三笠.jpg", // Relative to the /src directory. Relative to the /public directory if it starts with '/'
 	name: "张波",
-	bio: "旅程终有一日抵达终点，不必匆忙",
+	bio: "旅程总有一日抵达终点，不必匆忙",
 	links: [
 		{
-			name: "Twitter",
-			icon: "fa6-brands:twitter", // Visit https://icones.js.org/ for icon codes
+			name: "QQ",
+			icon: "fa6-brands:qq", // Visit https://icones.js.org/ for icon codes
 			// You will need to install the corresponding icon set if it's not already included
 			// `pnpm add @iconify-json/<icon-set-name>`
-			url: "https://twitter.com",
+			url: "https://user.qzone.qq.com/852927414/334",
 		},
 		{
 			name: "Steam",
