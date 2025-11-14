@@ -1,0 +1,114 @@
+---
+title: 观众渲染中的工作记录
+published: 2025-11-14T15:50:00.000Z
+updated: 2024-01-11T00:00:00.000Z
+description: 记录我在观众渲染中完成的事情
+image: "/images/cover1.jpeg"
+tags:
+  - Audience
+  - Unity
+  - compute shader
+category: 工作记录
+draft: false
+---
+import Collapse from "../../components/mdx/Collapse.astro";
+import Diff from "../../components/mdx/Diff.astro";
+import Tabs from "../../components/mdx/Tabs.astro";
+import QAItem from "../../components/QAItem.astro";
+
+# 大规模观众渲染
+
+## 1. 整体效果
+
+<Diff
+  l="/images/image_home_noAA.jpg"
+  r="/images/image_home_TAA.jpg"
+  leftAlt="未抗锯齿"
+  rightAlt="TAA"
+/>
+
+## 2. 引言
+ 
+大规模观众渲染移动端来说是一个不小的挑战
+- 效果方面：观众配色需要适配30+场馆，实例数量在6000以上，观众动作尽可能多样且不重复，光照需要层次感。
+- 性能方面：8Gen3要求120帧，15分钟不降频，最终达到了十分钟稳110帧左右, 后续稳定100帧。
+
+后续我从工作流程展开，具体可以记录一下我在工作中完成的事项。
+
+## 3. 总体流程
+观众渲染的整个流程主要分为：观众动作响应系统设计->烘焙顶点动画->根据场馆给纹理数组上色->根据纹理绘制
+不同lod观众->进一步整体性能优化
+#### 1. 动作响应系统
+大规模观众渲染移动端来说是一个不小的挑战
+#### 2. 烘焙顶点动画
+大规模观众渲染移动端来说是一个不小的挑战
+
+
+## 6. 过程中学到的东东
+
+<Tabs
+  tabs={[
+    { id: "tab1", label: "GC垃圾回收" },
+    { id: "tab2", label: "网格合并" },
+    { id: "tab3", label: "多余顶点处理" }, 
+    { id: "tab4", label: "多余顶点处理1" },
+    { id: "tab5", label: "多余顶点处理2" }
+  ]}
+  defaultTab="tab1"
+>
+  <div slot="tab1">
+     千万不要在类似Update()函数中初始化一些结构体，会触发垃圾回收机制，造成大量的带宽损耗。
+  </div>
+
+  <div slot="tab2">
+    骨骼网格的合并最好让美术将所有网格的骨骼保持一致，并刷好权重，当然略有差别是没问题的，可选择`骨骼最多`的网格的那套骨骼作为最终合并后的网格骨骼即可。
+    在应对权重的时候需要查找骨骼的名字，使得顶点中的骨骼权重与`骨骼序号`对应。合并需要注意`顶点顺序，法线，UV，切线`。最后应用选中的骨骼的`bindpose`。
+    
+    ——最终效果是一套骨骼可以正确的驱动合并后的所有顶点
+  </div>
+
+  <div slot="tab3">
+    在渲染网格的时候，多余的顶点部分如果不需要渲染的话可以简单的将其裁切空间`位置加1000`，顶点会被硬件裁切掉，如果额外调用`discard`的话性能不如前者。
+  </div>
+
+  <div slot="tab4">
+    在渲染网格的时候，多余的顶点部分如果不需要渲染的话可以简单的将其裁切空间`位置加1000`，顶点会被硬件裁切掉，如果额外调用`discard`的话性能不如前者。
+  </div>
+
+  <div slot="tab5">
+    在渲染网格的时候，多余的顶点部分如果不需要渲染的话可以简单的将其裁切空间`位置加1000`，顶点会被硬件裁切掉，如果额外调用`discard`的话性能不如前者。
+  </div>
+  
+</Tabs>
+
+## 4. 问答组件
+
+<QAItem
+  question="什么是 MDX？"
+  answer="MDX 是一种文件格式，可让您在 Markdown 文档中无缝编写 JSX。您可以使用组件（如交互式图表或警报）导入和使用组件，所有这些都与常规 Markdown 内容一起使用。"
+/>
+
+## 5. 进阶用法
+
+你可以组合使用这些组件来创建更复杂的内容：
+
+<Collapse title="查看组合用法示例">
+  <p><strong>组合优势：</strong></p>
+  <ul>
+    <li>在折叠面板中组织详细内容，节省空间</li>
+    <li>通过选项卡分类展示相关信息</li>
+    <li>图片对比展示前后效果差异</li>
+    <li>嵌套使用组件创造层次结构</li>
+  </ul>
+
+  <p>MDX的强大之处在于可以自由组合各种组件，创造出丰富的内容体验。</p>
+
+  <p><strong>更多资源：</strong></p>
+  <p>查看 <a href="https://docs.astro.build/en/guides/markdown-content/" target="_blank">Astro官方文档</a>，了解更多关于MDX的高级用法和最佳实践。</p>
+</Collapse>
+
+## 6. 其余栗子🌰
+
+除了mdx组件，原博主教学的markdown写法还有很多，以下是一些栗子！
+
+                                                                                                                               |

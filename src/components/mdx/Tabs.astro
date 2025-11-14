@@ -39,6 +39,15 @@ const activeTab =
       <div class={`tab-panel ${activeTab === 'tab3' ? 'active' : 'hidden'}`} data-panel="tab3">
         <slot name="tab3" />
       </div>
+      <div class={`tab-panel ${activeTab === 'tab4' ? 'active' : 'hidden'}`} data-panel="tab4">
+        <slot name="tab4" />
+      </div>
+      <div class={`tab-panel ${activeTab === 'tab5' ? 'active' : 'hidden'}`} data-panel="tab5">
+        <slot name="tab5" />
+      </div>
+      <div class={`tab-panel ${activeTab === 'tab6' ? 'active' : 'hidden'}`} data-panel="tab6">
+        <slot name="tab6" />
+      </div>
     </div>
   </div>
 </div>
