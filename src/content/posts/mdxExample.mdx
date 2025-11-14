@@ -406,4 +406,36 @@ $$I = \int \rho R^{2} dV$$
 
 
 And note that you can backslash-escape any punctuation characters
-which you wish to be displayed literally, ex.: \`foo\`, \*bar\*, etc.                                                                                                                                              |
+which you wish to be displayed literally, ex.: \`foo\`, \*bar\*, etc.
+
+## 7. 表格示例
+
+### Markdown 表格
+
+这是一个简单的 Markdown 表格示例：
+
+| 列标题 1 | 列标题 2 | 列标题 3 |
+|----------|----------|----------|
+| 行 1, 列 1 | 行 1, 列 2 | 行 1, 列 3 |
+| 行 2, 列 1 | 行 2, 列 2 | 行 2, 列 3 |
+| 行 3, 列 1 | 行 3, 列 2 | 行 3, 列 3 |
+
+### HTML 表格 (MDX 中支持)
+
+在 MDX 中，你也可以直接使用 HTML `<table>` 标签来创建更复杂的表格，例如包含 `colspan` 或 `rowspan` 的表格。
+
+```html
+<table>
+  <thead>
+    <tr>
+      <th>Header 1</th>
+      <th>Header 2</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Data 1</td>
+      <td>Data 2</td>
+    </tr>
+  </tbody>
+</table>
