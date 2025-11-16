@@ -1,0 +1,22 @@
+---
+interface Props {
+	src: string;
+	title?: string;
+	loop?: boolean;
+}
+
+const { src, title, loop = false } = Astro.props;
+---
+
+<div class="video-container">
+    <video controls={!loop} loop={loop} autoplay={loop} muted={loop} playsinline={loop} src={src} title={title} class="w-full rounded-lg">
+        Your browser does not support the video tag.
+    </video>
+    {title && <p class="text-center text-sm text-gray-500 mt-2">{title}</p>}
+</div>
+
+<style>
+    .video-container {
+        margin: 2em 0;
+    }
+</style>

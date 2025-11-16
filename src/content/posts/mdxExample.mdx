@@ -15,8 +15,11 @@ import Collapse from "../../components/mdx/Collapse.astro";
 import Diff from "../../components/mdx/Diff.astro";
 import Tabs from "../../components/mdx/Tabs.astro";
 import QAItem from "../../components/QAItem.astro";
+import Video from "../../components/mdx/Video.astro";
 
 # MDX 特性演示
+
+
 
 ## 1. 图片对比组件
 
@@ -419,4 +422,10 @@ which you wish to be displayed literally, ex.: \`foo\`, \*bar\*, etc.
 | 行 1, 列 1 | 行 1, 列 2 | 行 1, 列 3 |
 | 行 2, 列 1 | 行 2, 列 2 | 行 2, 列 3 |
 | 行 3, 列 1 | 行 3, 列 2 | 行 3, 列 3 |
+## 新增：视频组件演示
 
+### 默认播放（带控件）
+<Video src="/videos/棒棒棒棒.mp4" title="五杀视频，帅哒" />
+
+### 自动循环播放（无控件）
+<Video src="/videos/棒棒棒棒.mp4" title="五杀自动循环播放示例" loop={true} />

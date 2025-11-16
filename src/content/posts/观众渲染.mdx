@@ -3,7 +3,7 @@ title: 观众渲染中的工作记录
 published: 2025-11-14T15:50:00.000Z
 updated: 2024-01-11T00:00:00.000Z
 description: 记录我在观众渲染中完成的事情
-image: "/images/cover1.jpeg"
+image: "/images/scenery3.jpg"
 tags:
   - Audience
   - Unity
@@ -15,22 +15,19 @@ import Collapse from "../../components/mdx/Collapse.astro";
 import Diff from "../../components/mdx/Diff.astro";
 import Tabs from "../../components/mdx/Tabs.astro";
 import QAItem from "../../components/QAItem.astro";
+import Video from "../../components/mdx/Video.astro";
 
 # 大规模观众渲染
 
 ## 1. 整体效果
+注意场上又不同类型的观众，包含男女，带帽长发等等，衣服配色也有差异。能响应场上得分事件，动作之间存在过渡。
 
-<Diff
-  l="/images/image_home_noAA.jpg"
-  r="/images/image_home_TAA.jpg"
-  leftAlt="未抗锯齿"
-  rightAlt="TAA"
-/>
+<Video src="/videos/audience.mp4" title="观众系统一览" loop={true} />
 
 ## 2. 引言
  
 大规模观众渲染移动端来说是一个不小的挑战
-- 效果方面：观众配色需要适配30+场馆，实例数量在6000以上，观众动作尽可能多样且不重复，光照需要层次感。
+- 效果方面：观众配色需要适配30+场馆，实例数量在6000以上，观众响应进球，动作尽可能多样且不重复，光照需要层次感。
 - 性能方面：8Gen3要求120帧，15分钟不降频，最终达到了十分钟稳110帧左右, 后续稳定100帧。
 
 后续我从工作流程展开，具体可以记录一下我在工作中完成的事项。
@@ -98,12 +95,14 @@ float4 hatColor[6];
     { id: "tab2", label: "网格合并" },
     { id: "tab3", label: "多余顶点处理" }, 
     { id: "tab4", label: "移动端兼容" },
-    { id: "tab5", label: "多余顶点处理2" }
+    { id: "tab5", label: "透明" }
   ]}
   defaultTab="tab1"
 >
   <div slot="tab1">
      千万不要在类似Update()函数中初始化一些结构体，会触发垃圾回收机制，造成大量的带宽损耗。
+     
+     可以用profiler查看。
   </div>
 
   <div slot="tab2">
@@ -126,6 +125,8 @@ float4 hatColor[6];
   </div>
 
   <div slot="tab5">
-    在渲染网格的时候，多余的顶点部分如果不需要渲染的话可以简单的将其裁切空间`位置加1000`，顶点会被硬件裁切掉，如果额外调用`discard`的话性能不如前者。
+    有个好玩的事情是，如果游戏运行帧数设定为120帧，而观众隔一帧绘制的话，观众将会变得透明。
+
+    但是运行帧数一般很难设置稳定，效果还是没法稳定。
   </div>
 </Tabs>
