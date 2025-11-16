@@ -59,6 +59,11 @@ skinnedMeshRenderer.vertexBufferTarget = Graphics.Target.Raw;
 实例是哪一类观众（一共5正常男，1带帽男，1带帽女，1单马尾女，1短发女）。
 - 绘制过程中，确定好了目前实例是哪一类观众后，需要丢弃多余顶点。剩余的顶点，按照`排列方式`以及传入的`偏移数组`决定查找
 顶点动画纹理中的特定顶点范围，保证每个实例仅代表一个观众。
+
+最后是关于每个实例的世界空间位置信息，因为是使用到Unity中 `RenderMeshInstanced` 这个接口，所以需要每一帧传入每个实例的世界空间位置矩阵
+将所有矩阵按照instance ID的顺序排列，组合在一起传入gpu后供每个实例读取。
+- 有关观众位置生成的方法，简单来说是根据座椅的uv中心点生成cube或者是地板的uv填满cube（就是在世界空间Mesh上填满cube），随后记录这些cube的位置和旋转，用于观众位置的输入。
+
 #### d. 根据场馆对纹理上色
 由于观众所需的场馆众多，而且需要实时切换颜色。最开始的方案是贴图本身不变，随后传入特定场馆对应的
 颜色数据进行叠加。但是颜色数据占用cbuffer不少，最初的版本根据下面在着色器中修改传入`变量`上色：
@@ -66,7 +71,7 @@ skinnedMeshRenderer.vertexBufferTarget = Graphics.Target.Raw;
 float4 shoesColor[6];
 float4 pantColor[6];
 float4 clothColor0[12];
-float4 clothColor1[12];  
+float4 clothColor1[12];
 float4 hatColor[6];
   ```
 一个想法是将上完色的纹理直接保存下来，后续使用直接采样即可。可是30+场馆，每个场馆需要36张纹理（代表至少36个不同的观众），`存储开销`过大。
