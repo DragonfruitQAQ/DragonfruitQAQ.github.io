@@ -3,7 +3,7 @@ title: 或许值得记录的经验
 published: 2025-09-18T00:00:00.000Z
 updated: 2025-09-18T00:00:00.000Z
 description: 工作过程中遇到的一些问题以及如何解决的
-image: "/images/cover.jpeg"
+image: "/images/scenery4.jpg"
 tags:
   - Unity
   - RenderDoc
@@ -14,13 +14,43 @@ draft: false
 import Collapse from "../../components/mdx/Collapse.astro";
 import Diff from "../../components/mdx/Diff.astro";
 import Tabs from "../../components/mdx/Tabs.astro";
+import QAItem from "../../components/mdx/QAItem.astro";
+import Video from "../../components/mdx/Video.astro";
 
 ## 1. Unity
 
-1. RenderMeshInstanced 和 DrawMeshInstancedIndirect
-2. 在从Texture2D拷贝图像到Texture2DArray特定层的时候会遇到：graphics.copytexture source and destination have different master texture limits. source 1, destination 0
-原因：使用了Mipmap的Texture2D主纹理可能有所限制，而Array没有这一设定。使用sourceTex.ignoreMipmapLimit = true;即可解决
+1. RenderMeshInstanced 和 DrawMeshInstancedIndirect 均使用到了 `gpu instance` 技术，可以高效渲染大量网格。前者使用方便，后者则将计算任务交给gpu追求极致性能。
+
+<Tabs tabs={[
+  { id: "tab1", label: "RenderMeshInstanced" },
+  { id: "tab2", label: "DrawMeshInstancedIndirect" }
+]}>
+<div slot="tab1">
+  从 __CPU__ 端准备好所有需要渲染的实例数据（例如每个实例的位置、旋转、缩放矩阵，
+  或者包含这些信息的自定义结构体数组），然后一次性提交给 GPU 进行渲染。
+</div>
+<div slot="tab2">
+  渲染参数（尤其是要渲染的实例数量）不是由 CPU 直接指定的，而是从一个 GPU 上
+ 的计算缓冲区（Compute Buffer）中读取的。这个过程是“间接的”（Indirect），因此得名。
+</div>
+</Tabs>
+
+2. 复制纹理遇到的bug
+
+<QAItem
+  question="在从Texture2D拷贝图像到Texture2DArray特定层的时候会遇到：graphics.copytexture source and destination have different master texture limits. source 1, destination 0"
+  answer="原因：使用了Mipmap的Texture2D主纹理可能有所限制，而Array没有这一设定。使用sourceTex.ignoreMipmapLimit = true;即可解决"
+/>
+
 3. 调试程序错误时遇到打了断点但是程序运行不到断点的情况：一般是用了某个未被赋值的变量，仔细查看报错信息(喂给AI)
+
+4. 热区功能：分了数个区域，每个球员分配一串序号决定热区还是冷区，踩到相应区域变色。
+
+<Video src="/videos/HotZone.mp4" title="热区功能演示" loop={true} />
+
+5. 简单切换场景功能：
+
+<Video src="/videos/SwitchScene.mp4" title="简要切换场景功能演示" loop={true} />
 ## 2. RenderDoc
 
 1. RenderDoc可以调试compute shader，打开pipeline 窗口，选择特定的线程即可。
