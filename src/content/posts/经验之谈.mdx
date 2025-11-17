@@ -51,6 +51,10 @@ import Video from "../../components/mdx/Video.astro";
 5. 简单切换场景功能：
 
 <Video src="/videos/switchSceneSimple.mp4" title="简要切换场景功能演示" loop={true} />
+
+6. 垃圾回收gc
+代码写的不好，每帧初始化一些结构体就会触发这个问题。注意`打印信息`中如果有字符串结构体，也可能导致gc，并且一时半会儿找不到gc的来源。（unity profiler中可以查看gc）
+
 ## 2. RenderDoc
 
 1. RenderDoc可以调试compute shader，打开pipeline 窗口，选择特定的线程即可。
