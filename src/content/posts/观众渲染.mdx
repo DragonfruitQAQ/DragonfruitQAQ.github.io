@@ -103,7 +103,8 @@ float4 hatColor[6];
     { id: "tab2", label: "网格合并" },
     { id: "tab3", label: "多余顶点处理" }, 
     { id: "tab4", label: "移动端兼容" },
-    { id: "tab5", label: "透明" }
+    { id: "tab5", label: "透明" },
+    { id: "tab6", label: "亮度渐变"}
   ]}
   defaultTab="tab1"
 >
@@ -137,4 +138,13 @@ float4 hatColor[6];
 
     但是运行帧数一般很难设置稳定，效果还是没法稳定。
   </div>
+
+  <div slot="tab6">
+    观众亮度需要过渡明暗区域，最简单的方式是调整ambient：
+    ```astro
+    float3 ambient = SampleSH(i.worldNormal)* (_DarkScale / (i.yPos + _DarkScale));
+    ```
+    越低的观众，也就是越前排的观众越亮。
+  </div>
+
 </Tabs>
