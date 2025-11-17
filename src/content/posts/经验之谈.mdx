@@ -56,6 +56,12 @@ import Video from "../../components/mdx/Video.astro";
 1. RenderDoc可以调试compute shader，打开pipeline 窗口，选择特定的线程即可。
 
 ## 3.ComputeShader
+先上链接：https://zhuanlan.zhihu.com/p/14250635909
+
+在选定项目属于Linear（大多数项目都会选这个，便于shader计算）时，shader采样srgb贴图或者inspector上的颜色
+时，会进行转换，将伽马空间颜色转为线性后计算，最终输出时，再进行一次转换，转换到伽马空间显示。
+
+- compute shader采样与普通shader相同，但是当compute shader写入srgb贴图的时候，`不会进伽马矫正`，所以需要手动矫正数据。
 
 
 ## 4.结语
