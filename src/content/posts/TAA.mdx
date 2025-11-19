@@ -15,15 +15,27 @@ import Collapse from "../../components/mdx/Collapse.astro";
 import Diff from "../../components/mdx/Diff.astro";
 import Tabs from "../../components/mdx/Tabs.astro";
 import QAItem from "../../components/mdx/QAItem.astro";
+import VideoDiff from "../../components/mdx/VideoDiff.astro";
 
 # Unity 实现 TAA
 
-## 1. 静态对比效果
+## 1. 效果对比
+
+### 静态
 
 <Diff
-  l="/images/image_home_noAA.jpg"
-  r="/images/image_home_TAA.jpg"
+  l="/images/NoTAA.jpg"
+  r="/images/TAA.jpg"
   leftAlt="未抗锯齿"
+  rightAlt="TAA"
+/>
+
+### 动态
+
+<VideoDiff
+  l="/videos/NoTAA.mp4"
+  r="/videos/TAAwithMotionVector.mp4"
+  leftAlt="没有TAA"
   rightAlt="TAA"
 />
 
