@@ -1,0 +1,294 @@
+---
+interface Props {
+	r: string; // right video
+	l: string; // left video
+	rightAlt?: string;
+	leftAlt?: string;
+}
+
+const { r, l, rightAlt = "Right video", leftAlt = "Left video" } = Astro.props;
+---
+
+<div class="not-prose diff aspect-[16/9] rounded-lg overflow-hidden" data-fullscreen-container>
+  <div class="diff-item-1">
+    <video
+      src={l}
+      class="w-full h-full object-cover"
+      autoplay
+      muted
+      loop
+      playsinline
+      data-video-left
+    >
+    </video>
+    <div class="diff-caption-left">{leftAlt}</div>
+  </div>
+  <div class="diff-item-2">
+    <video
+      src={r}
+      class="w-full h-full object-cover"
+      autoplay
+      muted
+      loop
+      playsinline
+      data-video-right
+    >
+    </video>
+    <div class="diff-caption-right">{rightAlt}</div>
+  </div>
+  <div class="diff-resizer">
+    <div class="diff-resizer-line"></div>
+    <div class="diff-resizer-circle"></div>
+  </div>
+  <button 
+    class="diff-fullscreen-btn" 
+    aria-label="Toggle fullscreen"
+    data-fullscreen-btn
+  >
+    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M8 3H5a2 2 0 0 0-2 2v3"></path>
+      <path d="M21 8V5a2 2 0 0 0-2-2h-3"></path>
+      <path d="M3 16v3a2 2 0 0 0 2 2h3"></path>
+      <path d="M16 21h3a2 2 0 0 0 2-2v-3"></path>
+    </svg>
+  </button>
+  <div class="video-controls">
+    <button class="control-btn play-pause-btn" data-play-pause-btn aria-label="Play/Pause">
+      <svg class="play-icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+      <svg class="pause-icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor" style="display: none;"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
+    </button>
+  </div>
+</div>
+<style>
+  .diff {
+    position: relative;
+    width: 100%;
+    display: grid;
+    user-select: none;
+    -webkit-user-select: none;
+  }
+
+  .diff-item-1,
+  .diff-item-2 {
+    grid-area: 1/1;
+    overflow: hidden;
+  }
+
+  .diff-item-2 {
+    clip-path: polygon(50% 0, 100% 0, 100% 100%, 50% 100%);
+  }
+
+  .diff-resizer {
+    position: absolute;
+    height: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    cursor: ew-resize;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 4;
+  }
+
+    .diff-resizer-line {
+    position: absolute;
+    width: 3px;
+    height: 100%;
+    background-color: var(--primary, #3b82f6);
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 1;
+    }
+
+  .diff-resizer-circle {
+    position: relative;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    border: 2px solid white;
+    background-color: var(--primary, #3b82f6);
+    box-shadow: 0 0 0 1px var(--primary, #3b82f6);
+    z-index: 2;
+    transition: transform 0.2s ease;
+  }
+  
+  .diff:hover .diff-resizer-circle {
+    transform: scale(1.1);
+  }
+
+  .diff.resizing .diff-resizer-circle {
+    transform: scale(1.2);
+  }
+
+  .diff-fullscreen-btn {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    width: 40px;
+    height: 40px;
+    border-radius: 6px;
+    background-color: rgba(0, 0, 0, 0.7);
+    color: white;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity 0.2s ease, background-color 0.2s ease;
+    z-index: 10;
+  }
+
+  .diff:hover .diff-fullscreen-btn, .diff:hover .video-controls {
+    opacity: 1;
+  }
+  
+  .diff.fullscreen .diff-fullscreen-btn {
+      opacity: 1;
+  }
+
+  .diff-fullscreen-btn:hover {
+    background-color: rgba(0, 0, 0, 0.9);
+  }
+
+  .diff-caption-left,
+  .diff-caption-right {
+    position: absolute;
+    bottom: 12px;
+    padding: 4px 8px;
+    background-color: rgba(0, 0, 0, 0.7);
+    color: white;
+    border-radius: 4px;
+    font-size: 14px;
+    z-index: 3;
+    max-width: 45%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .diff-caption-left { left: 12px; }
+  .diff-caption-right { right: 12px; }
+  
+  .video-controls {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 10;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+  }
+  
+  .control-btn {
+    background: rgba(0,0,0,0.7);
+    border: none;
+    border-radius: 50%;
+    width: 60px;
+    height: 60px;
+    cursor: pointer;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: white;
+  }
+  
+  .control-btn:hover {
+    background: rgba(0,0,0,0.9);
+  }
+</style>
+
+<script>
+  function initializeVideoDiff() {
+    document.querySelectorAll('.diff').forEach(diff => {
+      if (diff.hasAttribute('data-video-diff-initialized')) return;
+      diff.setAttribute('data-video-diff-initialized', 'true');
+
+      const resizer = diff.querySelector('.diff-resizer') as HTMLElement;
+      const item2 = diff.querySelector('.diff-item-2') as HTMLElement;
+      const videoL = diff.querySelector<HTMLVideoElement>('[data-video-left]');
+      const videoR = diff.querySelector<HTMLVideoElement>('[data-video-right]');
+      const fullscreenBtn = diff.querySelector<HTMLButtonElement>('[data-fullscreen-btn]');
+      const playPauseBtn = diff.querySelector<HTMLButtonElement>('[data-play-pause-btn]');
+      const playIcon = playPauseBtn?.querySelector<HTMLElement>('.play-icon');
+      const pauseIcon = playPauseBtn?.querySelector<HTMLElement>('.pause-icon');
+
+      if (!resizer || !item2 || !videoL || !videoR || !playPauseBtn || !playIcon || !pauseIcon) return;
+
+      let isResizing = false;
+
+      const resize = (e: MouseEvent | TouchEvent) => {
+        if (!isResizing) return;
+        const rect = diff.getBoundingClientRect();
+        const clientX = e instanceof MouseEvent ? e.clientX : e.touches[0].clientX;
+        const x = clientX - rect.left;
+        const percentage = Math.max(0, Math.min(100, (x / rect.width) * 100));
+        resizer.style.left = `${percentage}%`;
+        item2.style.clipPath = `polygon(${percentage}% 0, 100% 0, 100% 100%, ${percentage}% 100%)`;
+      };
+      
+      resizer.addEventListener('mousedown', () => isResizing = true);
+      document.addEventListener('mousemove', resize);
+      document.addEventListener('mouseup', () => isResizing = false);
+      resizer.addEventListener('touchstart', () => isResizing = true, { passive: true });
+      document.addEventListener('touchmove', (e) => resize(e), { passive: true });
+      document.addEventListener('touchend', () => isResizing = false);
+
+      const sync = (master: HTMLVideoElement, slave: HTMLVideoElement) => {
+        if (master.paused) {
+            slave.pause();
+        } else {
+            slave.play();
+        }
+        slave.currentTime = master.currentTime;
+      };
+
+      const togglePlay = () => {
+        if (!videoL || !videoR) return;
+        if (videoL.paused) {
+          videoL.play();
+          videoR.play();
+        } else {
+          videoL.pause();
+          videoR.pause();
+        }
+      };
+
+      const updatePlayButton = () => {
+        if (!videoL || !playIcon || !pauseIcon) return;
+        if (videoL.paused) {
+          playIcon.style.display = 'block';
+          pauseIcon.style.display = 'none';
+        } else {
+          playIcon.style.display = 'none';
+          pauseIcon.style.display = 'block';
+        }
+      };
+      
+      playPauseBtn.addEventListener('click', togglePlay);
+      videoL.addEventListener('play', () => { if(videoR) sync(videoL, videoR); updatePlayButton(); });
+      videoL.addEventListener('pause', () => { if(videoR) sync(videoL, videoR); updatePlayButton(); });
+      videoL.addEventListener('timeupdate', () => { if(videoR) videoR.currentTime = videoL.currentTime; });
+
+      if (fullscreenBtn) {
+        fullscreenBtn.addEventListener('click', () => {
+          if (document.fullscreenElement) {
+            document.exitFullscreen();
+          } else {
+            diff.requestFullscreen();
+          }
+        });
+      }
+      
+      // Init state
+      updatePlayButton();
+    });
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initializeVideoDiff);
+  } else {
+    initializeVideoDiff();
+  }
+  document.addEventListener('astro:page-load', initializeVideoDiff);
+</script>

@@ -429,3 +429,14 @@ which you wish to be displayed literally, ex.: \`foo\`, \*bar\*, etc.
 
 ### 自动循环播放（无控件）
 <Video src="/videos/棒棒棒棒.mp4" title="五杀自动循环播放示例" loop={true} />
+
+## 新增：视频对比组件演示
+
+import VideoDiff from "../../components/mdx/VideoDiff.astro";
+
+<VideoDiff
+  l="/videos/audience.mp4"
+  r="/videos/hotZoneVisualization.mp4"
+  leftAlt="观众"
+  rightAlt="热力图"
+/>
