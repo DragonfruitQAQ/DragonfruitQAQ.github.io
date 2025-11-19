@@ -17,24 +17,7 @@ import Tabs from "../../components/mdx/Tabs.astro";
 import QAItem from "../../components/mdx/QAItem.astro";
 import Video from "../../components/mdx/Video.astro";
 
-## 1. 一些功能的实现
-
-1. 热区功能：分了数个区域，每个球员分配一串序号决定热区还是冷区，踩到相应区域变色。
-
-<Video src="/videos/hotZoneVisualization.mp4" title="热区功能演示" loop={true} />
-
-2. 简单切换场景功能：
-
-<Video src="/videos/switchSceneSimple.mp4" title="简要切换场景功能演示" loop={true} />
-
-有关这个功能，其实一开始实现起来颇为方便，只需调配好特定的资源路径，分别在脚本中获取替换即可（当然需要注意美术资产的规范性，如果不规范的话需要获取特定`旋转缩放`信息）。
-
-<QAItem
-  question="然而如果物体有更改怎么处理？"
-  answer="较为合理的做法是重新获取物体的路径并且保存为资产，后续如果有物体修改的话，重新获取路径刷新资产即可。"
-/>
-
-## 2.调试修复BUG经验
+## 1. Unity
 
 1. RenderMeshInstanced 和 DrawMeshInstancedIndirect 均使用到了 `gpu instance` 技术，可以高效渲染大量网格。前者使用方便，后者则将计算任务交给gpu追求极致性能。
 
@@ -61,13 +44,18 @@ import Video from "../../components/mdx/Video.astro";
 
 3. 调试程序错误时遇到打了断点但是程序运行不到断点的情况：一般是用了某个未被赋值的变量，仔细查看报错信息(喂给AI)
 
+4. 热区功能：分了数个区域，每个球员分配一串序号决定热区还是冷区，踩到相应区域变色。
 
+<Video src="/videos/hotZoneVisualization.mp4" title="热区功能演示" loop={true} />
 
-4. 垃圾回收gc
+5. 简单切换场景功能：
 
+<Video src="/videos/switchSceneSimple.mp4" title="简要切换场景功能演示" loop={true} />
+
+6. 垃圾回收gc
 代码写的不好，每帧初始化一些结构体就会触发这个问题。注意`打印信息`中如果有字符串结构体，也可能导致gc，并且一时半会儿找不到gc的来源。（unity profiler中可以查看gc）
 
-5. pc移动端表现不一致
+7. pc移动端表现不一致
 
 <Diff
   l="/images/audienceWithBUG.jpg"
@@ -89,11 +77,11 @@ import Video from "../../components/mdx/Video.astro";
 ```
 
 
+## 2. RenderDoc
 
+1. RenderDoc可以调试compute shader，打开pipeline 窗口，选择特定的线程即可。
 
-6. RenderDoc可以调试compute shader，打开pipeline 窗口，选择特定的线程即可。
-
-7. 关于Compute shader中颜色空间问题：
+## 3.ComputeShader
 先上链接：https://zhuanlan.zhihu.com/p/14250635909
 
 在选定项目属于Linear（大多数项目都会选这个，便于shader计算）时，shader采样srgb贴图或者inspector上的颜色
