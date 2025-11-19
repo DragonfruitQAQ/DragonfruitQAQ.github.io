@@ -55,6 +55,28 @@ import Video from "../../components/mdx/Video.astro";
 6. 垃圾回收gc
 代码写的不好，每帧初始化一些结构体就会触发这个问题。注意`打印信息`中如果有字符串结构体，也可能导致gc，并且一时半会儿找不到gc的来源。（unity profiler中可以查看gc）
 
+7. pc移动端表现不一致
+
+<Diff
+  l="/images/audienceWithBUG.jpg"
+  r="/images/audienceNoBUG.jpg"
+  leftAlt="实例缺失"
+  rightAlt="正常情况"
+/>
+
+观众渲染在使用`间接渲染`的时候会出现移动端表现与pc端不一致的情况，从表现上来看，在不同LOD层级过渡的过程中似乎有实例缺失，
+但是经过逐步调试发现buffer中的参数表现均属正常。最后发现是vulkan、metal平台与DX和OpenGL平台对于Instance的DrawCall处理差异的问题
+：前两者会合并批次，而后两者会依据cpu端调用而不合并批次。
+需要下列代码fix问题
+```astro
+#if !defined(SHADER_API_METAL) || ！defined(SHADER_API_VULKAN)
+  uint index = unity_InstanceID + _ArgsBuffer[_ArgsOffset];
+#else
+  uint index = unity_InstanceID;
+#endif
+```
+
+
 ## 2. RenderDoc
 
 1. RenderDoc可以调试compute shader，打开pipeline 窗口，选择特定的线程即可。
