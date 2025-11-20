@@ -75,13 +75,16 @@ const { src, title, loop = false } = Astro.props;
                         const bufferedEnd = video.buffered.end(video.buffered.length - 1);
                         const progress = (bufferedEnd / video.duration) * 100;
                         progressBar.value = progress;
+
+                        if (progress >= 100) {
+                            hideProgress();
+                        }
                     } catch (e) {
                         // Ignore error when no buffer is available.
                     }
                 }
             });
 
-            video.addEventListener('canplaythrough', hideProgress);
             video.addEventListener('waiting', showProgress);
             video.addEventListener('playing', () => {
                 progressContainer.style.display = 'none';
