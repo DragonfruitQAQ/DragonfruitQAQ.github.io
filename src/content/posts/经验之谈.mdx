@@ -23,6 +23,9 @@ import Video from "../../components/mdx/Video.astro";
 
 <Video src="/videos/hotZoneVisualization.mp4" title="热区功能演示" loop={true} />
 
+对Mesh的不同区域顶点用顶点色进行区分。后续，顶点着色器根据顶点色确认区域索引。最后像素着色器根据索引决定返回的颜色。
+最终返回的颜色包括：透明，热区亮红色，热区被选中暗红，冷区亮蓝色，冷区被选中暗蓝色。
+
 2. 简单切换场景功能：
 
 <Video src="/videos/switchSceneSimple.mp4" title="简要切换场景功能演示" loop={true} />
@@ -100,4 +103,3 @@ import Video from "../../components/mdx/Video.astro";
 - compute shader采样与普通shader相同，但是当compute shader写入srgb贴图的时候，`不会进伽马矫正`，所以需要手动矫正数据。
 
 
-## 4.结语
