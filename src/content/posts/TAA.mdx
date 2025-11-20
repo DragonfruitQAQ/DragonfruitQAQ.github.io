@@ -39,123 +39,69 @@ import VideoDiff from "../../components/mdx/VideoDiff.astro";
   rightAlt="TAA"
 />
 
-## 2. 前言
+## 2. 引言
 
+锯齿是图形中一个常见的现象，目前也有非常多的抗锯齿技术，最有名的莫过于DLSS（深度学习超采样），
+其中DLSS2的技术原理是基于Temporal Anti-Anliasing (TAA)的。想要了解这些技术首先要了解锯齿产生的原因：
+
+![锯齿产生原因](/images/sampleForPixel.jpg)
+
+上图所示，当每一个像素有一个采样点的时候，这个像素的颜色完全取决于采样点采样是否在三角形内部，如果采样点在三角形内部，那么就显示三角形颜色，否则就显示背景。这样，锯齿就产生了。我们可以总结，锯齿产生的本质原因是采样率过低导致的失真，那么最简单的抗锯齿方法就是增加采样率。
+SSAA超采样抗锯齿就是这样做的，增加像素中采样点的数量，随后根据采样点的分布混合而得最终的像素颜色。
 TAA时域抗锯齿，原理上来说与SSAA相似，只不过SSAA是相当于渲染两倍大小的图像随后缩小成原始图像，
-而TAA则是结合了历史帧和当前帧进行混合抗锯齿。
+而TAA则是将其余的采样点分布到其他帧上，结合了历史帧和当前帧进行混合抗锯齿。
+  
+静态场景下的TAA很容易理解，但是在游戏方面，动态场景才是主要的。包括摄像机移动旋转，物体移动，uv动画等等等等。那么就涉及如何找到与当前帧的像素对应的上一帧的像素的问题，以及有些像素在历史帧更不找不到对应的，那么就需要在合理范围内拒绝掉可能出现的历史帧颜色。
 
-<Collapse title="查看组件特点">
-1. **交互特性**：
-   - 可拖动的分隔线
-   - 平滑的过渡效果
-   - 触摸屏支持
+## 3. 实现TAA的主要部分
 
-2. **样式特点**：
-   - 响应式设计
-   - 圆角边框
-   - 优雅的视觉效果
+- __`TemporalAAFeature` (ScriptableRendererFeature)__:
 
-3. **使用方法**：
-```astro
-<Diff
-  l="/images/OverField1.png"
-  r="/images/OverField2.png"
-  leftAlt="左侧图片描述"
-  rightAlt="右侧图片描述"
-/>
-```
+  - 作为 URP 的 Renderer Feature 入口，负责创建和配置 TAA 相关的 Render Pass。
+  - 管理 TAA 的各项设置 (`TAASettings`)，如混合比例、抖动强度、锐化参数、Filter 类型等。
+  - 根据 Unity 版本差异，管理 Motion Vector Pass 和 Depth Copy Pass 的创建。
 
-<Diff
-  l="/images/OverField1.png"
-  r="/images/OverField2.png"
-  leftAlt="左侧图片描述"
-  rightAlt="右侧图片描述"
-/>
+- __`TAAJitterPass` (ScriptableRenderPass)__:
 
-</Collapse>
+  - 负责计算和应用相机的投影矩阵抖动（Jitter）。
+  - 使用 Halton 序列生成抖动偏移量，并在每一帧对投影矩阵进行微小的偏移，这是 TAA 能够通过多帧信息重建超采样图像的基础。
+  - 将抖动后的矩阵应用到当前帧的渲染中，并设置全局 Shader 变量 `_JitterMatrix`。
 
-## 3. 选项卡组件
+- __`TAARenderPass` (ScriptableRenderPass)__:
 
-<Tabs
-  tabs={[
-    { id: "tab1", label: "基础用法" },
-    { id: "tab2", label: "高级配置" },
-    { id: "tab3", label: "最佳实践" }
-  ]}
-  defaultTab="tab1"
->
-  <div slot="tab1">
-    <h4>基础用法</h4>
-    <p>这里是基础用法的内容。MDX允许我们在Markdown中使用Astro组件。</p>
+  - 执行实际的 TAA 后处理 Shader (`TempoalAA.shader`)。
+  - 负责历史帧纹理 (`_historyTexture` / `accumTexture`) 的维护和 ping-pong 读写。
+  - 处理当前帧颜色与历史帧颜色的混合。
+  - 根据设置执行锐化处理。
 
-    ```astro
-    <Tabs tabs={[
-      { id: "tab1", label: "标签1" },
-      { id: "tab2", label: "标签2" }
-    ]}>
-      <div slot="tab1">内容1</div>
-      <div slot="tab2">内容2</div>
-    </Tabs>
-    ```
+__Motion Vectors (运动向量) 支持__:
 
-    <p>选项卡组件提供了清晰的内容分组方式，适合展示相关但独立的信息。</p>
-  </div>
+- 为了解决动态场景下的重影（Ghosting）问题，实现了自定义的 Motion Vector 计算。
 
-  <div slot="tab2">
-    <h4>高级配置</h4>
-    <p>这里是高级配置的内容。可以自定义样式和行为。</p>
+- __`CustomMotionVectorPass`__: 负责渲染 Motion Vector Texture。它包含三个部分：
 
-    <p><strong>特性：</strong></p>
-    <ul>
-      <li>支持键盘导航和无障碍访问</li>
-      <li>平滑的切换动画效果</li>
-      <li>响应式设计，适配移动端</li>
-      <li>可自定义默认激活的选项卡</li>
-    </ul>
-  </div>
+  - __Camera Motion__: 计算相机移动产生的像素速度 (`TAACameraMotionVectors.shader`)。
+  - __Object Motion__: 计算动态物体移动产生的像素速度 (`TAAObjectMotionVectors.shader`)。
+  - __FOV Object Motion__: 专门处理特殊 FOV 物体（开局站着的五个哥们）的 Motion Vector (`TAAFovObjectMotionVectors.shader`)。
 
-  <div slot="tab3">
-    <h4>最佳实践</h4>
-    <p>使用选项卡时的最佳实践：</p>
-    <ul>
-      <li>保持标签文字简洁明了</li>
-      <li>不要在一个页面中使用过多选项卡</li>
-      <li>确保内容有逻辑关联性</li>
-      <li>为重要内容提供直接访问方式</li>
-    </ul>
+- __`CustomMotionVectorRendering` & `CustomPreviousFrameData`__: 用于管理和存储上一帧的 ViewProjection 矩阵，以便正确计算当前帧相对于上一帧的运动。
 
-    <p>选项卡是组织复杂内容的有效方式，但要注意不要过度使用。</p>
-  </div>
-</Tabs>
+## 4. 后续shader中实现的各种优化
 
-## 4. 问答组件
+- __Filter 采样__:
 
-<QAItem
-  question="什么是 MDX？"
-  answer="MDX 是一种文件格式，可让您在 Markdown 文档中无缝编写 JSX。您可以使用组件（如交互式图表或警报）导入和使用组件，所有这些都与常规 Markdown 内容一起使用。"
-/>
+  - 支持 __Bicubic Filter__ (`_TAA_UseBicubicFilter`): 在采样历史帧时使用双三次插值（5-tap 近似），比标准的双线性插值更清晰，能减少历史帧累积带来的模糊。
+  - 支持 __9-Tap / 5-Tap Sampling__: 在统计当前帧邻域颜色时，可选择 9 采样点或 5 采样点模式，平衡性能与质量。
 
-## 5. 进阶用法
+- __YCoCg 色彩空间__: 所有的混合和 Clamping 操作都在 YCoCg 空间进行（`RGBToYCoCg` / `YCoCgToRGB`）。YCoCg 空间将亮度（Luma）和色度分离，在此空间进行混合比 RGB 空间更符合人眼感知，能减少色偏。
 
-你可以组合使用这些组件来创建更复杂的内容：
+- __Perceptual Space Lerp__ (`_TAA_LerpAtPerceptualSpace`): 混合时并非直接线性插值，而是根据亮度进行加权，使得在暗部和亮部的混合更加自然。
 
-<Collapse title="查看组合用法示例">
-  <p><strong>组合优势：</strong></p>
-  <ul>
-    <li>在折叠面板中组织详细内容，节省空间</li>
-    <li>通过选项卡分类展示相关信息</li>
-    <li>图片对比展示前后效果差异</li>
-    <li>嵌套使用组件创造层次结构</li>
-  </ul>
+- __锐化 (Sharpening)__: TAA 本质上会带来模糊，因此在 TAA 后包含了一个锐化 Pass（或集成在 TAA Pass 中），使用简单的 3x3 卷积核进行锐化，补偿 TAA 带来的细节损失。
 
-  <p>MDX的强大之处在于可以自由组合各种组件，创造出丰富的内容体验。</p>
+__Dilation (膨胀)__ (`_TAA_UseDilation`): 用于增强边缘的稳定性。
 
-  <p><strong>更多资源：</strong></p>
-  <p>查看 <a href="https://docs.astro.build/en/guides/markdown-content/" target="_blank">Astro官方文档</a>，了解更多关于MDX的高级用法和最佳实践。</p>
-</Collapse>
+## 5. 展望
 
-## 6. 其余栗子🌰
-
-除了mdx组件，原博主教学的markdown写法还有很多，以下是一些栗子！
-
-                                                                                                                               |
+性能开销对于手机来说不小，如果省略很多优化的话，画面瑕疵也不少。对于体育游戏来说，似乎锯齿比模糊更易接受一些。（即便是SSAA也会有边缘模糊的情况）
+后续没有实际在项目的移动端部署TAA。                                                                                                       |
