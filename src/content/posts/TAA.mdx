@@ -55,53 +55,62 @@ TAA时域抗锯齿，原理上来说与SSAA相似，只不过SSAA是相当于渲
 
 ## 3. 实现TAA的主要部分
 
-- __`TemporalAAFeature` (ScriptableRendererFeature)__:
+- `TemporalAAFeature` (ScriptableRendererFeature):
 
   - 作为 URP 的 Renderer Feature 入口，负责创建和配置 TAA 相关的 Render Pass。
   - 管理 TAA 的各项设置 (`TAASettings`)，如混合比例、抖动强度、锐化参数、Filter 类型等。
   - 根据 Unity 版本差异，管理 Motion Vector Pass 和 Depth Copy Pass 的创建。
 
-- __`TAAJitterPass` (ScriptableRenderPass)__:
+- `TAAJitterPass` (ScriptableRenderPass):
 
   - 负责计算和应用相机的投影矩阵抖动（Jitter）。
   - 使用 Halton 序列生成抖动偏移量，并在每一帧对投影矩阵进行微小的偏移，这是 TAA 能够通过多帧信息重建超采样图像的基础。
   - 将抖动后的矩阵应用到当前帧的渲染中，并设置全局 Shader 变量 `_JitterMatrix`。
 
-- __`TAARenderPass` (ScriptableRenderPass)__:
+- `TAARenderPass` (ScriptableRenderPass):
 
   - 执行实际的 TAA 后处理 Shader (`TempoalAA.shader`)。
   - 负责历史帧纹理 (`_historyTexture` / `accumTexture`) 的维护和 ping-pong 读写。
   - 处理当前帧颜色与历史帧颜色的混合。
   - 根据设置执行锐化处理。
 
-__Motion Vectors (运动向量) 支持__:
+Motion Vectors (运动向量) 支持:
 
 - 为了解决动态场景下的重影（Ghosting）问题，实现了自定义的 Motion Vector 计算。
 
-- __`CustomMotionVectorPass`__: 负责渲染 Motion Vector Texture。它包含三个部分：
+  - `CustomMotionVectorPass`: 负责渲染 Motion Vector Texture。它包含三个部分：
 
-  - __Camera Motion__: 计算相机移动产生的像素速度 (`TAACameraMotionVectors.shader`)。
-  - __Object Motion__: 计算动态物体移动产生的像素速度 (`TAAObjectMotionVectors.shader`)。
-  - __FOV Object Motion__: 专门处理特殊 FOV 物体（开局站着的五个哥们）的 Motion Vector (`TAAFovObjectMotionVectors.shader`)。
+  - Camera Motion: 计算相机移动产生的像素速度 (`TAACameraMotionVectors.shader`)。
+  - Object Motion: 计算动态物体移动产生的像素速度 (`TAAObjectMotionVectors.shader`)。
+  ```astro
+  struct Attributes
+  {
+      float4 position             : POSITION;
+      float3 positionOld          : TEXCOORD4;
+      UNITY_VERTEX_INPUT_INSTANCE_ID
+  };
+  ```
+  主要还是unity内置了选项可以保存上一帧的位置，才方便后续的motionvector的实现
+  - FOV Object Motion: 专门处理特殊 FOV 物体（开局站着的五个哥们）的 Motion Vector (`TAAFovObjectMotionVectors.shader`)。
 
-- __`CustomMotionVectorRendering` & `CustomPreviousFrameData`__: 用于管理和存储上一帧的 ViewProjection 矩阵，以便正确计算当前帧相对于上一帧的运动。
+- `CustomMotionVectorRendering` & `CustomPreviousFrameData`: 用于管理和存储上一帧的 ViewProjection 矩阵，以便正确计算当前帧相对于上一帧的运动。
 
 ## 4. 后续shader中实现的各种优化
 
-- __Filter 采样__:
+- Filter 采样:
 
-  - 支持 __Bicubic Filter__ (`_TAA_UseBicubicFilter`): 在采样历史帧时使用双三次插值（5-tap 近似），比标准的双线性插值更清晰，能减少历史帧累积带来的模糊。
-  - 支持 __9-Tap / 5-Tap Sampling__: 在统计当前帧邻域颜色时，可选择 9 采样点或 5 采样点模式，平衡性能与质量。
+  - 支持 Bicubic Filter (`_TAA_UseBicubicFilter`): 在采样历史帧时使用双三次插值（5-tap 近似），比标准的双线性插值更清晰，能减少历史帧累积带来的模糊。
+  - 支持 9-Tap / 5-Tap Sampling: 在统计当前帧邻域颜色时，可选择 9 采样点或 5 采样点模式，平衡性能与质量。
 
-- __YCoCg 色彩空间__: 所有的混合和 Clamping 操作都在 YCoCg 空间进行（`RGBToYCoCg` / `YCoCgToRGB`）。YCoCg 空间将亮度（Luma）和色度分离，在此空间进行混合比 RGB 空间更符合人眼感知，能减少色偏。
+- YCoCg 色彩空间: 所有的混合和 Clamping 操作都在 YCoCg 空间进行（`RGBToYCoCg` / `YCoCgToRGB`）。YCoCg 空间将亮度（Luma）和色度分离，在此空间进行混合比 RGB 空间更符合人眼感知，能减少色偏。
 
-- __Perceptual Space Lerp__ (`_TAA_LerpAtPerceptualSpace`): 混合时并非直接线性插值，而是根据亮度进行加权，使得在暗部和亮部的混合更加自然。
+- Perceptual Space Lerp (`_TAA_LerpAtPerceptualSpace`): 混合时并非直接线性插值，而是根据亮度进行加权，使得在暗部和亮部的混合更加自然。
 
-- __锐化 (Sharpening)__: TAA 本质上会带来模糊，因此在 TAA 后包含了一个锐化 Pass（或集成在 TAA Pass 中），使用简单的 3x3 卷积核进行锐化，补偿 TAA 带来的细节损失。
+- 锐化 (Sharpening): TAA 本质上会带来模糊，因此在 TAA 后包含了一个锐化 Pass（或集成在 TAA Pass 中），使用简单的 3x3 卷积核进行锐化，补偿 TAA 带来的细节损失。
 
-__Dilation (膨胀)__ (`_TAA_UseDilation`): 用于增强边缘的稳定性。
+Dilation (膨胀) (`_TAA_UseDilation`): 用于增强边缘的motionvector获取。
 
 ## 5. 展望
 
 性能开销对于手机来说不小，如果省略很多优化的话，画面瑕疵也不少。对于体育游戏来说，似乎锯齿比模糊更易接受一些。（即便是SSAA也会有边缘模糊的情况）
-后续没有实际在项目的移动端部署TAA。                                                                                                       |
+后续没有实际在项目的移动端部署TAA。
