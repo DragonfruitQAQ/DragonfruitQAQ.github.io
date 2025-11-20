@@ -102,4 +102,7 @@ import Video from "../../components/mdx/Video.astro";
 
 - compute shader采样与普通shader相同，但是当compute shader写入srgb贴图的时候，`不会进伽马矫正`，所以需要手动矫正数据。
 
+8. Unity项目有个设置是优化Mesh顶点数据，如果勾选该项那么顶点数据中未被使用到的顶点数据可能会被优化。
+
+例如compute shader中传递顶点数据，用到buffer的时候需要注意传入的顶点数据格式。
 
