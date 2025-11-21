@@ -144,18 +144,18 @@ TAA开启的选项是采样周围5像素颜色构建包围盒，采样周围5像
 
 # 推荐使用
 
-目前经过测试，TAA可能适用于高端机型。渲染时间正常，可能传输数据稍大。在低端机型上会导致卡顿，高端机型上发热严重。建议在人物运动较少的场景开启TAA，比赛内因为模糊问题目前不建议开启。
+目前经过测试，TAA可能适用于高端机型。渲染时间正常，可能传输数据稍大。在低端机型上会导致卡顿，高端机型上发热严重。建议在人物运动较少的场景开启TAA，比赛内因为`模糊`问题，不建议开启。
 
 # 性能探讨
 
 TAA使用到了MotionVector，accumTex，DepthTexture，cameracolorAttachmentA和B5张rt，1920x1080情况下共占用63.2MB（其中深度图得拷出来占了15.8）。静态情况下，无需深度图，无需MotionVector，那么占用为39.5MB。采样总共15次（5次构建包围盒，5次双三次过滤采样历史帧，5次采样深度精确MotionVector），后续全屏后处理RT为7.9MB
 
-![image.png](https://alidocs.oss-cn-zhangjiakou.aliyuncs.com/res/4maOgkmMjRdPOWNX/img/dda0fb71-02fc-4358-a722-a0d2081f52ce.png)
+![taaRes1.jpg](/images/taaResults/taaRes1.jpg)
 
 MSAA2x使用55.3MB，后续全屏后处理RT为23.7MB
 
-![image.png](https://alidocs.oss-cn-zhangjiakou.aliyuncs.com/res/4maOgkmMjRdPOWNX/img/33ca93c9-506b-416a-b58d-474ca7f29862.png)
+![taaRes2.jpg](/images/taaResults/taaRes2.jpg)
 
 MSAA4x使用102.9MB，后续全屏后处理RT为39.6MB
 
-![image.png](https://alidocs.oss-cn-zhangjiakou.aliyuncs.com/res/4maOgkmMjRdPOWNX/img/c61db039-a50b-43b4-884b-3e80c4e5022d.png)
+![taaRes3.jpg](/images/taaResults/taaRes3.jpg)
