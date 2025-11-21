@@ -16,9 +16,9 @@ import Diff from "../../components/mdx/Diff.astro";
 import Tabs from "../../components/mdx/Tabs.astro";
 import QAItem from "../../components/mdx/QAItem.astro";
 
-# MDX 特性演示
+# FFTBloom演示
 
-## 1. 图片对比组件
+## 1. 效果对比
 
 <Diff
   l="/images/OverField1.png"
@@ -27,37 +27,21 @@ import QAItem from "../../components/mdx/QAItem.astro";
   rightAlt="右侧图片"
 />
 
-## 2. 查看组件
+## 2. 基本原理
 
-<Collapse title="查看组件特点">
-1. **交互特性**：
-   - 可拖动的分隔线
-   - 平滑的过渡效果
-   - 触摸屏支持
+泛光是一直以来是一个非常不错的后处理效果，可以显著增加氛围感。其实现原理也比较清晰：
 
-2. **样式特点**：
-   - 响应式设计
-   - 圆角边框
-   - 优雅的视觉效果
+1. 过滤原始画面，选择出需要处理的像素。
+2. 讲这些留下来的像素扩散开作为`泛光`。
+3. 将泛光图像叠加回原始图像。
 
-3. **使用方法**：
-```astro
-<Diff
-  l="/images/OverField1.png"
-  r="/images/OverField2.png"
-  leftAlt="左侧图片描述"
-  rightAlt="右侧图片描述"
-/>
-```
+其中第二步显然是决定效果的关键步骤。泛光的质量好坏可以从泛光`范围`，`过渡`是否柔和，`明暗`是否突出这几个角度来看。
+扩散像素光的最简单方法也分三步，首先降采样，然后模糊图像，最后升采样形成泛光。
+根据COD的做法，如果只做一次这个步骤，那么生成的泛光就会在广和过渡明显之间摇摆（根据降采样的度）。
+于是提出升降采样链的方法，最终叠加这些泛光就可以生成范围广，并且过渡自然的泛光。
 
-<Diff
-  l="/images/OverField1.png"
-  r="/images/OverField2.png"
-  leftAlt="左侧图片描述"
-  rightAlt="右侧图片描述"
-/>
-
-</Collapse>
+重新审视生成泛光的步骤，可以发现其中的模糊操作也可以进行变换。（高斯模糊等价于高斯核进行卷积）=>大核卷积可保留卷积核形状=>可以生成自定义形状的泛光。
+而这就是FFTBloom想要的最终效果。
 
 ## 3. 选项卡组件
 
