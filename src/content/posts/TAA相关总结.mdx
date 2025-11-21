@@ -1,0 +1,161 @@
+---
+title: TAA 相关结果展示
+published:  2024-05-24T20:06:22.000Z
+updated: 2024-05-24T20:06:22.000Z
+description: 展示 TAA 中的结果及分析
+image: "/images/cover.jpeg"
+tags:
+  - TAA
+  - Unity
+  - motion vector
+category: 工作记录
+draft: false
+---
+
+import Tabs from "../../components/mdx/Tabs.astro";
+
+# TAA相关总结
+
+时域抗锯齿是目前主流抗锯齿方法之一，相对msaa来说可应对着色锯齿，减少着色计算。使图像边缘更加柔和，但可能会引入一定模糊，加入锐化可适当减轻
+
+*   使用说明：
+    
+    *   开启TAA时，摄像机移动场景需要深度信息，故而需要去掉勾选FOVCameraObjects和FOVCameraForTransparentObjects Feature中的ClearDepth选项，一般而言，这个两个Feature需要起作用时，摄像机不移动。
+        
+    *   TAA目前没和MSAA兼容
+        
+    *   FovType 需要正确设置，因为有些FOV2层人物用到了fov调整效果，有些FOV2层人物没有用到。用到Fov效果的人物需要设置为FOV Camera Objects来设置（似乎只有主界面？？）——主界面需要设置FovType为FOV Camera Objects，其余界面设置为Not Fov
+        
+
+# 手机端画面对比（三星Note9）
+
+TAA开启的选项是采样周围5像素颜色构建包围盒，采样周围5像素深度确定MotionVector，未开启锐化，当前帧占比为0.15，启用BicubicFilter采样历史帧，FOV选项为NotFOV。
+
+1.  球员界面
+    
+<Tabs
+  tabs={[
+    { id: "tab1", label: "NoAA" },
+    { id: "tab2", label: "TAA" },
+    { id: "tab3", label: "MSAA2x" }, 
+    { id: "tab4", label: "MSAA4x" }
+  ]}
+  defaultTab="tab1"
+>
+  <div slot="tab1">
+    ![qiuyuanNoAA](/images/taaResults/qiuyuanjiemianNoAA.jpg)
+  </div>
+
+  <div slot="tab2">
+    ![qiuyuanTAA](/images/taaResults/qiuyuanjiemianTAA.jpg)
+  </div>
+
+  <div slot="tab3">
+    ![qiuyuanMSAA2x](/images/taaResults/qiuyuanjiemianMSAA2x.jpg)
+  </div>
+
+  <div slot="tab4">
+    ![qiuyuanMSAA4x](/images/taaResults/qiuyuanjiemianMSAA4x.jpg)
+  </div>
+
+</Tabs>
+- 小结: 球员界面TAA表现不错，可去除其他AA情况下，球员头部周围的一些着色锯齿高光闪烁的问题。
+        
+        
+2.  比赛开始
+
+<Tabs
+  tabs={[
+    { id: "tab1", label: "NoAA" },
+    { id: "tab2", label: "TAA" },
+    { id: "tab3", label: "MSAA2x" }, 
+    { id: "tab4", label: "MSAA4x" }
+  ]}
+  defaultTab="tab1"
+>
+  <div slot="tab1">
+    ![inMatchNoAA](/images/taaResults/inMatchNoAA.jpg)
+  </div>
+
+  <div slot="tab2">
+    ![inMatchTAA](/images/taaResults/inMatchTAA.jpg)
+  </div>
+
+  <div slot="tab3">
+    ![inMatchMSAA2x](/images/taaResults/inMatchMSAA2x.jpg)
+  </div>
+
+  <div slot="tab4">
+    ![inMatchMSAA4x](/images/taaResults/inMatchMSAA4x.jpg)
+  </div>
+
+</Tabs>
+- 小结: 比赛内的情况，TAA使得图像变得柔和，且抗锯齿效果好于MSAA2x，与MSAA4x相当。TAA对球衣字符的着色锯齿也有一定缓解，但是会引入一定的模糊，而MSAA4x虽然不解决着色锯齿，但是不会引入模糊的效果。玩家可能更加偏好有锯齿但清晰的界面
+        
+3.  比赛内
+
+<Tabs
+  tabs={[
+    { id: "tab1", label: "NoAA" },
+    { id: "tab2", label: "TAA" },
+    { id: "tab3", label: "MSAA2x" }, 
+    { id: "tab4", label: "MSAA4x" }
+  ]}
+  defaultTab="tab1"
+>
+  <div slot="tab1">
+    ![inMatch2NoAA](/images/taaResults/inMatch2NoAA.jpg)
+  </div>
+
+  <div slot="tab2">
+    ![inMatch2TAA](/images/taaResults/inMatch2TAA.jpg)
+  </div>
+
+  <div slot="tab3">
+    ![inMatch2MSAA2x](/images/taaResults/inMatch2MSAA2x.jpg)
+  </div>
+
+  <div slot="tab4">
+    ![inMatch2MSAA4x](/images/taaResults/inMatch2MSAA4x.jpg)
+  </div>
+
+</Tabs>
+
+5.  总结  对比了多场景下，未开启抗锯齿、TAA、MSAA2x和MSAA4x上的性能和效果。从性能上来看，TAA的性能与MSAA2x相近，比MSAA4x好。从效果上看TAA的效果与MSAA4x相似，都好于MSAA2x。但是在比赛内，TAA会引起一定的模糊情况，例如赛内球员球衣上的字符会变得更加柔和但是模糊。且由于TAA抖动镜头，远处的细节会不清晰或抖动，运动的场景无需调整，静态可能需要手动调整TAA参数。  
+    ![TAABlurProblem](/images/taaResults/TAABlurProblem.jpg)
+    
+
+# 具体选项说明
+
+| 选项 | 描述 |
+| :--- | :--- |
+| **`BlendScale`** | **当前帧所占比例**：一般无需修改，当画面抖动过大时可适当调小（常见值 0.05 ~ 0.25）。<br/> **推荐值**：主界面及球员界面 0.1，比赛内 0.2，或全局 0.15。画面抖动时可适当减少，最低至 0.04。 |
+| **`JitterScale`** | **抖动尺度**：控制抖动的幅度。 |
+| **`GammaBox`** | **颜色盒尺寸**：用于拒绝历史帧的颜色盒尺寸。 |
+| **`UseSharp`** | **使用锐化**：缓解 TAA 带来的模糊问题，但会增大性能消耗。注意：使用该选项需要启用 `Use9Tap`。 |
+| **`CurrentSharp`** | **锐化程度**：控制锐化的强度。 |
+| **`UseBicubicFilter`** | **双三次过滤（历史帧）**：当镜头需要前后缩放时，启用该选项可显著减少模糊。 |
+| **`Use9Tap`** | **采样周围9像素**：启用该选项以支持锐化。未启用则默认为采样周围5像素（用于颜色盒）。 |
+| **`UseClip`** | **颜色裁剪方法**：在 `Clip` 和 `Clamp` 方法之间选择，用于处理颜色值。 |
+| **`LerpAtPerceptualSpace`** | **在感知空间插值**：若场景 HDR 效果导致微小闪光，启用该选项可减少闪光。 |
+| **`UseDilation`** | **使用最近深度采样MotionVector**：通过对深度图进行膨胀操作，使用最近的深度来获取更精确的运动矢量。 |
+| **`FovType`** | **FOV 人物类型**：确认人物由哪个 `RenderFeature` 绘制，以匹配正确的运动矢量，避免残影。不同场景下设置可能不同。 |
+  
+
+# 推荐使用
+
+目前经过测试，TAA可能适用于高端机型。渲染时间正常，可能传输数据稍大。在低端机型上会导致卡顿，高端机型上发热严重。建议在人物运动较少的场景开启TAA，比赛内因为模糊问题目前不建议开启。
+
+# 性能探讨
+
+TAA使用到了MotionVector，accumTex，DepthTexture，cameracolorAttachmentA和B5张rt，1920x1080情况下共占用63.2MB（其中深度图得拷出来占了15.8）。静态情况下，无需深度图，无需MotionVector，那么占用为39.5MB。采样总共15次（5次构建包围盒，5次双三次过滤采样历史帧，5次采样深度精确MotionVector），后续全屏后处理RT为7.9MB
+
+![image.png](https://alidocs.oss-cn-zhangjiakou.aliyuncs.com/res/4maOgkmMjRdPOWNX/img/dda0fb71-02fc-4358-a722-a0d2081f52ce.png)
+
+MSAA2x使用55.3MB，后续全屏后处理RT为23.7MB
+
+![image.png](https://alidocs.oss-cn-zhangjiakou.aliyuncs.com/res/4maOgkmMjRdPOWNX/img/33ca93c9-506b-416a-b58d-474ca7f29862.png)
+
+MSAA4x使用102.9MB，后续全屏后处理RT为39.6MB
+
+![image.png](https://alidocs.oss-cn-zhangjiakou.aliyuncs.com/res/4maOgkmMjRdPOWNX/img/c61db039-a50b-43b4-884b-3e80c4e5022d.png)
