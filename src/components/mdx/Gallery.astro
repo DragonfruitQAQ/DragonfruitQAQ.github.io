@@ -1,0 +1,97 @@
+---
+interface Image {
+	src: string;
+	alt: string;
+}
+
+interface Props {
+	images: Image[];
+}
+
+const { images } = Astro.props;
+---
+
+<div class="image-gallery">
+  {images.map((image) => (
+    <div class="gallery-item">
+      <a href={image.src} target="_blank" rel="noopener noreferrer">
+        <img src={image.src} alt={image.alt} loading="lazy" />
+      </a>
+      {image.alt && <p class="image-alt">{image.alt}</p>}
+    </div>
+  ))}
+</div>
+
+<style>
+  .image-gallery {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 1rem;
+    padding: 1rem 0;
+  }
+
+  .gallery-item {
+    border: 1px solid var(--theme-border-color);
+    border-radius: 8px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background-color: var(--theme-card-background);
+    transition: transform 0.2s ease-in-out;
+    user-select: none; /* 移除选中文字的阴影 */
+    -webkit-user-select: none; /* Chrome, Safari, Opera */
+    -moz-user-select: none; /* Firefox */
+    -ms-user-select: none; /* Internet Explorer/Edge */
+    outline: none; /* 移除焦点边框 */
+    box-shadow: none; /* 移除可能的阴影 */
+  }
+
+  /* 针对a标签和img标签的hover/focus状态 */
+  .gallery-item a {
+    outline: none !important;
+    box-shadow: none !important;
+    -webkit-tap-highlight-color: transparent !important; /* 移除移动端点击高亮 */
+    user-select: none !important; /* 确保图片本身不可选中 */
+    -webkit-user-select: none !important;
+    -moz-user-select: none !important;
+    -ms-user-select: none !important;
+    text-decoration: none !important; /* 移除链接下划线，作为基础样式 */
+    border: none !important; /* 移除可能的边框 */
+  }
+
+  .gallery-item a:hover,
+  .gallery-item a:focus,
+  .gallery-item a:active,
+  .gallery-item a:focus-visible { /* 针对所有焦点和激活状态 */
+    outline: none !important;
+    box-shadow: none !important;
+    background-color: transparent !important; /* 尝试移除默认背景高亮 */
+    text-decoration: none !important; /* 移除链接下划线 */
+    border: none !important; /* 移除可能的边框 */
+  }
+
+  .gallery-item:hover {
+    transform: translateY(-5px);
+  }
+
+  .gallery-item img {
+    width: 100%;
+    height: 150px; /* 固定高度，保持一致性 */
+    object-fit: cover; /* 裁剪图片以适应 */
+    display: block;
+    border: none !important; /* 移除图片可能的边框 */
+    user-select: none; /* 确保图片本身不可选中 */
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+  }
+
+  .image-alt {
+    padding: 0.5rem;
+    font-size: 0.9em;
+    color: var(--theme-text-color-secondary);
+    text-align: center;
+  }
+</style>

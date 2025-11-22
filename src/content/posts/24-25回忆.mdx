@@ -16,6 +16,7 @@ import Diff from "../../components/mdx/Diff.astro";
 import Tabs from "../../components/mdx/Tabs.astro";
 import QAItem from "../../components/mdx/QAItem.astro";
 import Video from "../../components/mdx/Video.astro";
+import Gallery from "../../components/mdx/Gallery.astro";
 
 # 杂谈
 
@@ -24,3 +25,14 @@ import Video from "../../components/mdx/Video.astro";
 ## 2. 图片对比组件
 
 ## 3. 图片对比组件
+
+## 4. 图片画廊示例
+
+<Gallery images={[
+  { src: "/images/character0.jpg", alt: "角色图片0" },
+  { src: "/images/character2.jpg", alt: "角色图片2" },
+  { src: "/images/scenery1.jpg", alt: "风景图片1" },
+  { src: "/images/scenery2.jpg", alt: "风景图片2" },
+  { src: "/images/scenery3.jpg", alt: "风景图片3" },
+  { src: "/images/scenery4.jpg", alt: "风景图片4" },
+]} />
