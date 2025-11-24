@@ -80,42 +80,64 @@ FFTBloom的具体原理
 
 <Tabs
   tabs={[
-    { id: "tab1", label: "HeartBloom" },
-    { id: "tab2", label: "HeartFormula" }
+    { id: "tab1", label: "生成的卷积核图像" },
+    { id: "tab2", label: "desmos网站绘制的公式" },
+    { id: "tab3", label: "生成核图像的Shader函数" }
   ]}
   defaultTab="tab1"
 >
   <div slot="tab1">
-    生成的卷积核图像
+    
     ![HeartKernel](/images/bloomResults/heartKernel.jpg)
   </div>
 
   <div slot="tab2">
-    - desmos网站绘制的公式
     ![HeartFormula](/images/bloomResults/heartFormula.jpg)
+  </div>
+
+  <div slot="tab3">
+    ```astro
+      float Heart(float radius, float angle){
+				// math
+				float r = 0;
+				if(angle < PI){
+					r = 2 * abs(cos(angle));
+				}else if( angle < 1.5 * PI){
+					r = (-cos(angle)-sqrt(1 + 3 * pow(sin(angle),2)))/pow(sin(angle),2);
+				}else if(angle < 2 * PI){
+					r = (-cos(angle)+sqrt(1 + 3 * pow(sin(angle),2)))/pow(sin(angle),2);
+				}
+
+				//adjustment
+				r *= _scale;
+				radius /= r;
+				return pow(abs(radius), -_alpha);
+			}
+    ```
   </div>
 </Tabs>
 
 #### 4. `频域变换 (Forward FFT)`
+使用 `FFT.compute` 将空间域图像转换为频域图像。这个过程对源图像 (Source)和 卷积核(Kernel)分别进行（如果卷积核图像保持不变的话，卷积核变换到频域这步可以省略直接使用卷积核频谱即可）。
+
+- 算法：采用 Cooley-Tukey 算法，利用蝶形运算 (Butterfly Operation) 和位反转 (Bit Reversal)。对二维图像变换成频谱可以分成两步，一步进行行变换，随后进行列变换。
+
+原始的N点DFT被分解成了计算这两个N/2点子序列的DFT，这句话表明FFT是一个适合递归处理的问题，然而compute shader不适合编写递归程序，故而使用了位反转，内存同步与屏障 GroupMemoryBarrierWithGroupSync() 
+规定数据流动，达到用循环`迭代`法模拟`递归`。
+
 
 #### 5. `频域卷积 (Frequency Domain Multiplication)`
+对应分量相乘即可。
 
 #### 6. `逆变换 (Inverse FFT)`
+逆向进行FFT。
 
 #### 7. 混合输出 (Blending)
-
-## 4. 问答组件
-
-<QAItem
-  question="什么是 MDX？"
-  answer="MDX 是一种文件格式，可让您在 Markdown 文档中无缝编写 JSX。您可以使用组件（如交互式图表或警报）导入和使用组件，所有这些都与常规 Markdown 内容一起使用。"
-/>
-
-## 5. 进阶用法
+将“模糊”后的扩散光叠加回原始图像，形成泛光。
 
 
-## 6. 其余栗子🌰
+::github{repo="DragonfruitQAQ/FFTBloomProject"}
 
-除了mdx组件，原博主教学的markdown写法还有很多，以下是一些栗子！
-
-                                                                                                                               |
+## 4. 瑕疵及未来展望
+目前工程中的图像效果方面基本已经实现，但是性能方面对于玩家当前日益提高的对帧数的需求来说，还是差一些，不过作为RenderFeature，开关效果相对容易，可以只在性能需求不那么大的地方开启。
+后处理的时间尽量控制在1ms左右，未来性能提升的地方是改进FFT算法（有好几种算法，但是我还没完全理解）。
