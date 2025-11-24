@@ -52,11 +52,57 @@ import QAItem from "../../components/mdx/QAItem.astro";
 重新审视生成泛光的步骤，可以发现其中的模糊操作也可以进行变换。（高斯模糊等价于高斯核进行卷积）=>大核卷积可保留卷积核形状=>可以生成自定义形状的泛光。
 而这就是FFTBloom想要的最终效果。
 
+FFTBloom的具体原理
+
+如果拿一个大的星型图像对一张过滤了低亮像素的图像做`卷积`的话，那么最终处理后的图像会是在高亮像素周围产生星型图案。
+
+为什么用到FFT呢？因为大核卷积的开销过大，难以用于实时渲染，所以我们用到FFT加速卷积，其原理为`时域（空间域）的卷积等于频域的乘积`。运用这个原理就可以将昂贵的大核卷积运算转换为高效的 FFT 运算。
+
 ## 3. 实践过程
 
+所有流程依旧还是在RenderFeature中实现，主要包含
+#### 1. 准备阶段 (RenderPass Setup)
+
+- FFT运算的输入输出如果设置成2的幂次方大小的纹理的话会好处理很多，所以考虑性能与效果，我在512x512与1024x1024中犹豫，在时间中均尝试这二者发现，当原始图像降采样到512x512的时候，
+亮度信息失真十分严重，综合考虑，实践工程还是使用了1024x1024的纹理。性能为2ms左右。
+- 纹理传递过程创建了用于存储实部、虚部、中间结果等的一系列 RT
+- 后处理组件传递数据方便操控参数
+
+#### 2. 源图像处理 (Source Filtering)
+
+过滤得到高亮像素和降采样在这一阶段进行。
+
+#### 3. 卷积核生成 (Kernel Generation)
+- 实用shader生成具有衰减光效应的卷积核图案：包含`圆形`，`星型`，`蝴蝶`，`心型`，`一字型`等等。
+- 使用极坐标方式绘制卷积核图像，只要有`数学曲线方程`能绘制图线，就可以转换成具有衰减效应的卷积核图案。
+- 也可使用生成好的卷积图像
 
 
+<Tabs
+  tabs={[
+    { id: "tab1", label: "HeartBloom" },
+    { id: "tab2", label: "HeartFormula" }
+  ]}
+  defaultTab="tab1"
+>
+  <div slot="tab1">
+    生成的卷积核图像
+    ![HeartKernel](/images/bloomResults/heartKernel.jpg)
+  </div>
 
+  <div slot="tab2">
+    - desmos网站绘制的公式
+    ![HeartFormula](/images/bloomResults/heartFormula.jpg)
+  </div>
+</Tabs>
+
+#### 4. `频域变换 (Forward FFT)`
+
+#### 5. `频域卷积 (Frequency Domain Multiplication)`
+
+#### 6. `逆变换 (Inverse FFT)`
+
+#### 7. 混合输出 (Blending)
 
 ## 4. 问答组件
 
