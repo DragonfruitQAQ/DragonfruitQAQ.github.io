@@ -103,6 +103,7 @@ export default defineConfig({
 		}),
 		mdx(),
 		svelte(),
+		sitemap(),
 	],
 	markdown: {
 		remarkPlugins: [
