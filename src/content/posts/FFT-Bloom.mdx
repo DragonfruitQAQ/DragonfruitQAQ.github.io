@@ -52,24 +52,91 @@ import QAItem from "../../components/mdx/QAItem.astro";
 重新审视生成泛光的步骤，可以发现其中的模糊操作也可以进行变换。（高斯模糊等价于高斯核进行卷积）=>大核卷积可保留卷积核形状=>可以生成自定义形状的泛光。
 而这就是FFTBloom想要的最终效果。
 
+FFTBloom的具体原理
+
+如果拿一个大的星型图像对一张过滤了低亮像素的图像做`卷积`的话，那么最终处理后的图像会是在高亮像素周围产生星型图案。
+
+为什么用到FFT呢？因为大核卷积的开销过大，难以用于实时渲染，所以我们用到FFT加速卷积，其原理为`时域（空间域）的卷积等于频域的乘积`。运用这个原理就可以将昂贵的大核卷积运算转换为高效的 FFT 运算。
+
 ## 3. 实践过程
 
+所有流程依旧还是在RenderFeature中实现，主要包含
+#### 1. 准备阶段 (RenderPass Setup)
+
+- FFT运算的输入输出如果设置成2的幂次方大小的纹理的话会好处理很多，所以考虑性能与效果，我在512x512与1024x1024中犹豫，在时间中均尝试这二者发现，当原始图像降采样到512x512的时候，
+亮度信息失真十分严重，综合考虑，实践工程还是使用了1024x1024的纹理。性能为2ms左右。
+- 纹理传递过程创建了用于存储实部、虚部、中间结果等的一系列 RT
+- 后处理组件传递数据方便操控参数
+
+#### 2. 源图像处理 (Source Filtering)
+
+过滤得到高亮像素和降采样在这一阶段进行。
+
+#### 3. 卷积核生成 (Kernel Generation)
+- 实用shader生成具有衰减光效应的卷积核图案：包含`圆形`，`星型`，`蝴蝶`，`心型`，`一字型`等等。
+- 使用极坐标方式绘制卷积核图像，只要有`数学曲线方程`能绘制图线，就可以转换成具有衰减效应的卷积核图案。
+- 也可使用生成好的卷积图像
 
 
+<Tabs
+  tabs={[
+    { id: "tab1", label: "生成的卷积核图像" },
+    { id: "tab2", label: "desmos网站绘制的公式" },
+    { id: "tab3", label: "生成核图像的Shader函数" }
+  ]}
+  defaultTab="tab1"
+>
+  <div slot="tab1">
+    
+    ![HeartKernel](/images/bloomResults/heartKernel.jpg)
+  </div>
+
+  <div slot="tab2">
+    ![HeartFormula](/images/bloomResults/heartFormula.jpg)
+  </div>
+
+  <div slot="tab3">
+    ```astro
+      float Heart(float radius, float angle){
+				// math
+				float r = 0;
+				if(angle < PI){
+					r = 2 * abs(cos(angle));
+				}else if( angle < 1.5 * PI){
+					r = (-cos(angle)-sqrt(1 + 3 * pow(sin(angle),2)))/pow(sin(angle),2);
+				}else if(angle < 2 * PI){
+					r = (-cos(angle)+sqrt(1 + 3 * pow(sin(angle),2)))/pow(sin(angle),2);
+				}
+
+				//adjustment
+				r *= _scale;
+				radius /= r;
+				return pow(abs(radius), -_alpha);
+			}
+    ```
+  </div>
+</Tabs>
+
+#### 4. `频域变换 (Forward FFT)`
+使用 `FFT.compute` 将空间域图像转换为频域图像。这个过程对源图像 (Source)和 卷积核(Kernel)分别进行（如果卷积核图像保持不变的话，卷积核变换到频域这步可以省略直接使用卷积核频谱即可）。
+
+- 算法：采用 Cooley-Tukey 算法，利用蝶形运算 (Butterfly Operation) 和位反转 (Bit Reversal)。对二维图像变换成频谱可以分成两步，一步进行行变换，随后进行列变换。
+
+原始的N点DFT被分解成了计算这两个N/2点子序列的DFT，这句话表明FFT是一个适合递归处理的问题，然而compute shader不适合编写递归程序，故而使用了位反转，内存同步与屏障 GroupMemoryBarrierWithGroupSync() 
+规定数据流动，达到用循环`迭代`法模拟`递归`。
 
 
-## 4. 问答组件
+#### 5. `频域卷积 (Frequency Domain Multiplication)`
+对应分量相乘即可。
 
-<QAItem
-  question="什么是 MDX？"
-  answer="MDX 是一种文件格式，可让您在 Markdown 文档中无缝编写 JSX。您可以使用组件（如交互式图表或警报）导入和使用组件，所有这些都与常规 Markdown 内容一起使用。"
-/>
+#### 6. `逆变换 (Inverse FFT)`
+逆向进行FFT。
 
-## 5. 进阶用法
+#### 7. 混合输出 (Blending)
+将“模糊”后的扩散光叠加回原始图像，形成泛光。
 
+## 4. 瑕疵及未来展望
+目前工程中的图像效果方面基本已经实现，但是性能方面对于玩家当前日益提高的对帧数的需求来说，还是差一些，低配机型可能3~4ms，高配大概1~2ms，不过作为RenderFeature，开关效果相对容易，可以只在性能需求不那么大的地方开启。
+后处理的时间尽量控制在1ms左右，未来性能提升的地方是改进FFT算法（有好几种算法，但是我还没完全理解）。
 
-## 6. 其余栗子🌰
-
-除了mdx组件，原博主教学的markdown写法还有很多，以下是一些栗子！
-
-                                                                                                                               |
+::github{repo="DragonfruitQAQ/FFTBloomProject"}

@@ -94,3 +94,4 @@ SSPR最大的缺陷无疑是屏幕空间，在屏幕空间外一切信息都无�
 ## 4.结语
 光线追踪无疑是实现反射的好方法，但在某些项目中SSPR也有用武之地。只考虑静态镜面反射的话，IBL可以充分使用。
 我们也可以参考预滤波环境贴图的使用方法，使用粗糙度采样反射贴图的不同mipmap层级，进一步优化反射效果。当然需要一定开销是每一帧使用`cmd.GenerateMips(mReflectionTex);`
+::github{repo="DragonfruitQAQ/SSPR"}
